@@ -499,22 +499,39 @@ ${relevantChunks}</span>
         // SIMULATION: Hardcoded logic to make the result look real based on input
         // Real app sends the prompt from Step 6 to OpenAI/Anthropic
         setTimeout(() => {
-            let answer = "Based on the context provided, ";
-            
-            if(query.toLowerCase().includes("hallucination")) {
-                answer += "RAG reduces hallucinations by retrieving the most similar chunks to the user's query from external sources, ensuring the model relies on up-to-date information rather than just training data.";
-            } else if (query.toLowerCase().includes("split") || query.toLowerCase().includes("chunk")) {
-                answer += "documents are split into chunks and turned into vectors. This allows the system to retrieve specific relevant parts instead of processing the whole document at once.";
-            } else {
-                answer += "the system retrieves relevant data from external sources, converts them to vectors, and uses them to augment the generation process for more accurate results.";
-            }
+        let answer = "Based on the context provided, ";
+        
+        // 1. Check for "hallucination"
+        if(query.toLowerCase().includes("hallucination")) {
+            answer += "RAG reduces hallucinations by retrieving the most similar chunks to the user's query from external sources, ensuring the model relies on up-to-date information.";
+        } 
+        
+        // 2. Check for "split" or "chunk"
+        else if (query.toLowerCase().includes("split") || query.toLowerCase().includes("chunk")) {
+            answer += "documents are split into chunks and turned into vectors. This allows the system to retrieve specific relevant parts instead of processing the whole document.";
+        } 
 
-            btn.classList.remove('loading');
-            btn.innerText = "Regenerate";
-            
-            typeWriterEffect(answer, 'llmOutput');
-            activateStep('step7');
-        }, 1500);
+        // 3. YOUR NEW RULE: Who created this?
+        else if (query.toLowerCase().includes("who created") || query.toLowerCase().includes("author")) {
+            answer += "This interactive tool was created by an awesome developer to demonstrate how RAG works visually!";
+        }
+
+        // 4. YOUR NEW RULE: Weather
+        else if (query.toLowerCase().includes("weather")) {
+            answer += "I cannot determine the weather, as I am a RAG demo relying on the text you pasted above!";
+        }
+
+        // 5. The Fallback (Must be last!)
+        else {
+            answer += "the system retrieves relevant data from external sources, converts them to vectors, and uses them to augment the generation process for more accurate results.";
+        }
+
+        btn.classList.remove('loading');
+        btn.innerText = "Regenerate";
+        
+        typeWriterEffect(answer, 'llmOutput');
+        activateStep('step7');
+    }, 1500);
     }
 
     function typeWriterEffect(text, elementId) {

@@ -3,627 +3,561 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual RAG Pro | Vector Space Explorer</title>
-    <meta name="description" content="Professional retrieval-augmented generation visualizer with real-time vector space mapping.">
+    <title>Visual RAG: Interactive Learning Tool</title>
     <style>
         :root {
-            /* Professional SaaS Color Palette */
-            --bg-body: #0f172a;
-            --bg-panel: #1e293b;
-            --bg-input: #334155;
-            --border: #475569;
-            --primary: #6366f1; /* Indigo 500 */
+            --primary: #6366f1;
             --primary-hover: #4f46e5;
-            --accent: #10b981; /* Emerald 500 */
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --highlight: #f59e0b; /* Amber 500 */
-            --radius: 8px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --highlight: #fef3c7;
         }
 
         * { box-sizing: border-box; outline: none; }
-
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
             margin: 0;
-            overflow: hidden; /* Dashboard style */
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header */
-        header {
-            height: 60px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            background: var(--bg-panel);
-            justify-content: space-between;
-        }
-
-        .brand { font-weight: 700; font-size: 1.2rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-        .tag { background: var(--primary); font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; }
-
-        /* Main Dashboard Layout */
-        main {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Scrollable Panels */
-        .panel {
-            overflow-y: auto;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
         }
 
-        .left-panel { border-right: 1px solid var(--border); background: #172033; }
-        .right-panel { background: var(--bg-body); position: relative; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
 
-        /* Typography & Components */
-        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin: 0 0 10px 0; }
-        label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; display: block; }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--primary); }
+        header p { color: var(--text-muted); }
 
-        .card {
-            background: var(--bg-panel);
+        /* Step Cards */
+        .step-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 30px;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 15px;
-            box-shadow: var(--shadow);
+            opacity: 0.5;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        textarea, input[type="text"], input[type="number"] {
-            width: 100%;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px;
-            border-radius: var(--radius);
-            font-family: monospace;
-            font-size: 0.85rem;
-            transition: border 0.2s;
+        .step-card.active {
+            opacity: 1;
+            pointer-events: all;
+            border-left: 5px solid var(--primary);
         }
 
-        textarea:focus, input:focus { border-color: var(--primary); }
-        textarea { min-height: 120px; resize: vertical; }
-
-        button {
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: -15px;
             background: var(--primary);
             color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: var(--radius);
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             display: flex;
+            align-items: center;
             justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        h2 { margin-top: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        
+        /* Inputs & Controls */
+        .control-group {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .input-wrapper { display: flex; flex-direction: column; flex: 1; }
+        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        
+        textarea, input[type="text"], input[type="number"] {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        textarea { min-height: 100px; resize: vertical; }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
         }
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { background-color: var(--text-muted); cursor: not-allowed; }
 
-        button:hover { background: var(--primary-hover); transform: translateY(-1px); }
-        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        /* Visualizations */
+        .chunks-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
 
-        /* Sliders */
-        input[type="range"] { width: 100%; accent-color: var(--primary); margin: 10px 0; }
-
-        /* Chunk Visualization */
-        .chunk-list { display: flex; flex-direction: column; gap: 10px; }
-        .chunk-item {
-            font-size: 0.8rem;
+        .chunk-box {
+            background: #f1f5f9;
             padding: 10px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.05);
-            border-left: 3px solid transparent;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .chunk-item:hover { background: rgba(255,255,255,0.1); }
-        .chunk-item.retrieved { border-left-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
-        
-        /* Canvas Container */
-        .canvas-wrapper {
-            width: 100%;
-            height: 400px;
-            background: #0b1120;
-            border-radius: var(--radius);
+            border-radius: 6px;
+            font-size: 0.85rem;
             border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
         }
-        canvas { display: block; width: 100%; height: 100%; }
-        
-        .overlay-stats {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 5px 10px;
-            border-radius: 4px;
+
+        .vector-visual {
+            font-family: monospace;
             font-size: 0.75rem;
             color: var(--text-muted);
-            pointer-events: none;
+            word-break: break-all;
+            margin-top: 5px;
+            background: #e0e7ff;
+            padding: 5px;
+            border-radius: 4px;
         }
 
-        /* LLM Output Area */
-        .llm-output {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            font-size: 0.95rem;
+        .similarity-score {
+            float: right;
+            font-weight: bold;
+            color: var(--primary);
         }
-        .highlight { background: rgba(16, 185, 129, 0.2); color: var(--accent); padding: 0 4px; border-radius: 2px; }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            main { grid-template-columns: 1fr; overflow-y: auto; }
-            body { overflow: auto; height: auto; }
-            .canvas-wrapper { height: 300px; }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            position: relative;
+        }
+
+        .highlight-context { color: #818cf8; }
+        .highlight-query { color: #34d399; }
+
+        .llm-response {
+            border-left: 4px solid var(--success);
+            background: #ecfdf5;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s forwards; }
+        
+        .loading::after {
+            content: " ⏳";
+            animation: spin 1s infinite linear;
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="brand">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-        </svg>
-        Visual RAG Pro <span class="tag">v2.0</span>
-    </div>
-    <div style="font-size: 0.8rem; color: var(--text-muted);">
-        Interactive Vector Space Engine
-    </div>
-</header>
+<div class="container">
+    <header>
+        <h1>Visual RAG</h1>
+        <p>Interactive Retrieval-Augmented Generation Explainer</p>
+    </header>
 
-<main>
-    <!-- LEFT PANEL: CONFIG & INPUT -->
-    <div class="left-panel panel">
+    <!-- STEP 1: Input & Chunking -->
+    <div id="step1" class="step-card active">
+        <div class="step-number">1</div>
+        <h2>Knowledge Base & Chunking</h2>
+        <p>Enter the text you want your AI to know about. Then configure how we break it down.</p>
         
-        <!-- Section 1: Knowledge Base -->
-        <section class="card">
-            <h2>1. Knowledge Base</h2>
-            <div style="margin-bottom: 15px;">
-                <label for="corpus">Source Text</label>
-                <textarea id="corpus" spellcheck="false">Retrieval-Augmented Generation (RAG) is an architectural pattern that improves the efficacy of Large Language Models (LLM) by leveraging custom data. 
+        <div class="input-wrapper">
+            <label>Source Text</label>
+            <textarea id="sourceText" placeholder="Paste a Wikipedia article or documentation here...">RAG (Retrieval-Augmented Generation) is a technique that enhances Large Language Models by fetching relevant data from external sources before generating an answer. 
 
-Instead of relying solely on training data, RAG retrieves relevant document chunks from a vector database based on the user's query.
+Instead of relying solely on training data, RAG splits documents into chunks, turns them into vectors, and retrieves the most similar chunks to the user's query.
 
-First, documents are split into chunks. Then, an embedding model converts text into vectors.
+This process reduces hallucinations and ensures the model has up-to-date information.</textarea>
+        </div>
 
-When a user asks a question, the system finds the most similar vectors (Cosine Similarity) and feeds that context into the LLM.</textarea>
+        <div class="control-group">
+            <div class="input-wrapper">
+                <label>Chunk Size (characters)</label>
+                <input type="number" id="chunkSize" value="100" min="20">
             </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                <div>
-                    <label>Chunk Size</label>
-                    <input type="number" id="chunkSize" value="80" min="20">
-                </div>
-                <div>
-                    <label>Overlap</label>
-                    <input type="number" id="chunkOverlap" value="10" min="0">
-                </div>
+            <div class="input-wrapper">
+                <label>Overlap (characters)</label>
+                <input type="number" id="chunkOverlap" value="20" min="0">
             </div>
-
-            <button onclick="app.processKnowledgeBase()">
-                ⚙️ Index & Embed Knowledge
-            </button>
-        </section>
-
-        <!-- Section 2: Query -->
-        <section class="card" id="querySection" style="opacity: 0.5; pointer-events: none;">
-            <h2>2. Retrieval Query</h2>
-            <div style="margin-bottom: 15px;">
-                <label for="queryInput">User Question</label>
-                <input type="text" id="queryInput" placeholder="e.g., How does RAG use vectors?" onkeydown="if(event.key==='Enter') app.runRetrieval()">
+            <div style="display:flex; align-items:flex-end;">
+                <button onclick="performChunking()">✂️ Chunk Text</button>
             </div>
-            
-            <div style="margin-bottom: 15px;">
-                <label>Top K Results: <span id="topKValue" style="color:var(--primary)">2</span></label>
-                <input type="range" id="topK" min="1" max="5" value="2" oninput="document.getElementById('topKValue').innerText=this.value">
-            </div>
-
-            <button onclick="app.runRetrieval()">
-                🔍 Retrieve & Generate
-            </button>
-        </section>
-
-        <section class="card">
-            <h2>System Logs</h2>
-            <div id="logs" style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); height: 100px; overflow-y: auto;">
-                > System initialized...
-            </div>
-        </section>
-    </div>
-
-    <!-- RIGHT PANEL: VISUALIZATION -->
-    <div class="right-panel panel">
-        
-        <!-- Vector Space Visual -->
-        <section class="card" style="padding: 0; overflow: hidden; border: 1px solid var(--border);">
-            <div style="padding: 15px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); display: flex; justify-content: space-between;">
-                <h2>3. Vector Space Visualization (2D Projection)</h2>
-                <span class="tag" style="background: #334155;">Embedding Model: Deterministic-Hash-V1</span>
-            </div>
-            <div class="canvas-wrapper">
-                <canvas id="vectorCanvas"></canvas>
-                <div class="overlay-stats" id="canvasStats">Points: 0</div>
-            </div>
-        </section>
-
-        <!-- Context & LLM Output -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 250px;">
-            
-            <!-- Retrieved Context -->
-            <section class="card">
-                <h2>4. Retrieved Context (Top K)</h2>
-                <div id="retrievedChunks" class="chunk-list" style="height: 200px; overflow-y: auto;">
-                    <div style="text-align: center; color: var(--text-muted); margin-top: 50px;">
-                        Waiting for query...
-                    </div>
-                </div>
-            </section>
-
-            <!-- LLM Generation -->
-            <section class="card">
-                <h2>5. LLM Response</h2>
-                <div id="llmResponse" class="llm-output">
-                    <span style="color: var(--text-muted);">The generated answer will appear here after retrieval...</span>
-                </div>
-            </section>
         </div>
     </div>
-</main>
+
+    <!-- STEP 2: View Chunks -->
+    <div id="step2" class="step-card">
+        <div class="step-number">2</div>
+        <h2>Inspect Chunks</h2>
+        <p>The text has been sliced. This makes it easier to find specific information later.</p>
+        <div id="chunksOutput" class="chunks-container"></div>
+        <div class="control-group" style="margin-top: 20px;">
+            <button onclick="generateEmbeddings()">🧠 Create Vector Embeddings</button>
+        </div>
+    </div>
+
+    <!-- STEP 3: Embeddings -->
+    <div id="step3" class="step-card">
+        <div class="step-number">3</div>
+        <h2>Vector Embeddings</h2>
+        <p>Chunks are converted into lists of numbers (vectors). Similar meanings end up with similar numbers.</p>
+        <div id="vectorsOutput" class="chunks-container"></div>
+        <div class="control-group" style="margin-top: 20px;">
+            <button onclick="saveToStore()">💾 Save Vectors to Local Storage</button>
+        </div>
+    </div>
+
+    <!-- STEP 4: Query -->
+    <div id="step4" class="step-card">
+        <div class="step-number">4</div>
+        <h2>User Query</h2>
+        <p>The Knowledge Base is indexed. Now, ask a question.</p>
+        <div class="input-wrapper">
+            <label>Your Question</label>
+            <input type="text" id="userQuery" value="How does RAG reduce hallucinations?">
+        </div>
+        <div class="control-group">
+            <button onclick="askQuery()">🔍 Ask & Retrieve</button>
+        </div>
+    </div>
+
+    <!-- STEP 5: Retrieval -->
+    <div id="step5" class="step-card">
+        <div class="step-number">5</div>
+        <h2>Retrieval (Vector Similarity)</h2>
+        <p>We convert your question into a vector and find the top matches from our database using Cosine Similarity.</p>
+        
+        <div class="control-group">
+            <label>Top N Results:</label>
+            <input type="range" id="topKSlider" min="1" max="5" value="2" oninput="document.getElementById('topKVal').innerText = this.value; renderRetrieval();">
+            <span id="topKVal">2</span>
+        </div>
+
+        <div id="retrievalOutput" class="chunks-container"></div>
+        <div class="control-group" style="margin-top: 20px;">
+            <button onclick="constructPrompt()">📝 Construct System Prompt</button>
+        </div>
+    </div>
+
+    <!-- STEP 6: Prompt Construction -->
+    <div id="step6" class="step-card">
+        <div class="step-number">6</div>
+        <h2>Prompt Engineering</h2>
+        <p>We combine the original System instructions, the Retrieved Context, and the User Query into one payload.</p>
+        <div id="promptOutput" class="code-block"></div>
+        <div class="control-group" style="margin-top: 20px;">
+            <button onclick="generateAnswer()">🤖 Send to LLM</button>
+        </div>
+    </div>
+
+    <!-- STEP 7: LLM Answer -->
+    <div id="step7" class="step-card">
+        <div class="step-number">7</div>
+        <h2>LLM Generation</h2>
+        <p>The LLM reads the context provided and generates an accurate answer.</p>
+        <div id="llmOutput" class="llm-response"></div>
+    </div>
+
+</div>
 
 <script>
-/**
- * RAG ENGINE CLASS
- * Encapsulates the logic for text splitting, embedding generation, and similarity search.
- * Designed to be deterministic: Same input = Same output.
- */
-class RAGEngine {
-    constructor() {
-        this.chunks = [];
-        this.embeddings = [];
-    }
+    // --- STATE MANAGEMENT ---
+    const state = {
+        chunks: [],         // Array of strings
+        embeddings: [],     // Array of {id, text, vector}
+        queryEmbedding: [], // Vector for the query
+        searchResults: []   // Array of {id, text, score}
+    };
 
-    // 1. Chunking Logic (Sliding Window)
-    createChunks(text, size, overlap) {
-        this.chunks = [];
-        if (!text) return;
-        
+    // --- DOM HELPERS ---
+    const getEl = (id) => document.getElementById(id);
+    const activateStep = (id) => {
+        getEl(id).classList.add('active');
+        getEl(id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    // --- LOGIC: STEP 1 (Chunking) ---
+    function performChunking() {
+        const text = getEl('sourceText').value;
+        const size = parseInt(getEl('chunkSize').value);
+        const overlap = parseInt(getEl('chunkOverlap').value);
+
+        if(!text) return alert("Please enter some text.");
+
+        state.chunks = [];
         let i = 0;
+        
+        // Simple sliding window
         while (i < text.length) {
-            let end = Math.min(i + size, text.length);
-            // Verify we don't cut words in half (simple heuristic)
-            if (end < text.length && text[end] !== ' ' && text[end-1] !== ' ') {
-                const space = text.lastIndexOf(' ', end);
-                if (space > i) end = space;
-            }
-            
-            this.chunks.push({
-                id: this.chunks.length,
-                text: text.slice(i, end).trim()
-            });
-            
-            if (end >= text.length) break;
+            let chunk = text.slice(i, i + size);
+            state.chunks.push(chunk);
+            if (chunk.length < size) break; // End of text
             i += (size - overlap);
         }
-        return this.chunks;
+
+        renderChunks();
+        activateStep('step2');
     }
 
-    // 2. Embedding Logic (Deterministic Hash)
-    // Converts string -> [x, y] vector for visualization
-    // In production, this would call OpenAI/HuggingFace
-    embed(str) {
-        let h1 = 0xdeadbeef, h2 = 0x41c6ce57; 
-        for (let i = 0; i < str.length; i++) {
-            let ch = str.charCodeAt(i);
-            h1 = Math.imul(h1 ^ ch, 2654435761); 
-            h2 = Math.imul(h2 ^ ch, 1597334677);
-        }
-        h1 = ((h1 ^ h2) >>> 0) / 4294967296; 
-        h2 = ((h2 ^ h1) >>> 0) / 4294967296;
-        
-        // Map to -1 to 1 range
-        return [(h1 * 2) - 1, (h2 * 2) - 1];
-    }
-
-    generateEmbeddings() {
-        this.embeddings = this.chunks.map(chunk => ({
-            ...chunk,
-            vector: this.embed(chunk.text)
-        }));
-    }
-
-    // 3. Cosine Similarity
-    calculateSimilarity(queryVector, docVector) {
-        // Dot product
-        const dot = (queryVector[0] * docVector[0]) + (queryVector[1] * docVector[1]);
-        // Magnitude
-        const magA = Math.sqrt(queryVector[0]**2 + queryVector[1]**2);
-        const magB = Math.sqrt(docVector[0]**2 + docVector[1]**2);
-        
-        if (magA === 0 || magB === 0) return 0;
-        return dot / (magA * magB);
-    }
-
-    search(query, topK) {
-        const queryVec = this.embed(query);
-        
-        const results = this.embeddings.map(doc => {
-            return {
-                ...doc,
-                score: this.calculateSimilarity(queryVec, doc.vector)
-            };
-        });
-
-        // Sort descending
-        results.sort((a, b) => b.score - a.score);
-        return {
-            queryVector: queryVec,
-            results: results.slice(0, topK)
-        };
-    }
-}
-
-/**
- * VISUALIZATION CONTROLLER
- * Handles the Canvas drawing for the 2D Vector Space.
- */
-class VectorVisualizer {
-    constructor(canvasId) {
-        this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d');
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-    }
-
-    resize() {
-        const rect = this.canvas.parentElement.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
-    }
-
-    // Map -1...1 vector space to Canvas coordinates
-    mapToScreen(x, y) {
-        const padding = 40;
-        const w = this.canvas.width - (padding * 2);
-        const h = this.canvas.height - (padding * 2);
-        
-        return {
-            x: padding + ((x + 1) / 2) * w,
-            y: padding + ((y + 1) / 2) * h
-        };
-    }
-
-    draw(embeddings, queryVec = null, topResults = []) {
-        // Clear
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = '#0b1120';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Draw Grid
-        this.drawGrid();
-
-        // Draw Chunks (Knowledge Base)
-        embeddings.forEach(emb => {
-            const pos = this.mapToScreen(emb.vector[0], emb.vector[1]);
-            const isRetrieved = topResults.find(r => r.id === emb.id);
-
-            this.ctx.beginPath();
-            this.ctx.arc(pos.x, pos.y, isRetrieved ? 8 : 4, 0, Math.PI * 2);
-            this.ctx.fillStyle = isRetrieved ? '#10b981' : '#6366f1';
-            this.ctx.fill();
-            
-            // Label ID
-            this.ctx.fillStyle = '#94a3b8';
-            this.ctx.font = '10px Inter';
-            this.ctx.fillText(`C-${emb.id}`, pos.x + 10, pos.y + 3);
-        });
-
-        // Draw Query if exists
-        if (queryVec) {
-            const qPos = this.mapToScreen(queryVec[0], queryVec[1]);
-            
-            // Pulse effect
-            this.ctx.beginPath();
-            this.ctx.arc(qPos.x, qPos.y, 12, 0, Math.PI * 2);
-            this.ctx.fillStyle = 'rgba(245, 158, 11, 0.3)';
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(qPos.x, qPos.y, 6, 0, Math.PI * 2);
-            this.ctx.fillStyle = '#f59e0b'; // Amber
-            this.ctx.fill();
-            this.ctx.fillText("Query", qPos.x + 12, qPos.y + 3);
-
-            // Draw Lines to results
-            this.ctx.lineWidth = 1;
-            topResults.forEach(res => {
-                const rPos = this.mapToScreen(res.vector[0], res.vector[1]);
-                
-                // Gradient Line
-                const grad = this.ctx.createLinearGradient(qPos.x, qPos.y, rPos.x, rPos.y);
-                grad.addColorStop(0, '#f59e0b');
-                grad.addColorStop(1, '#10b981');
-                
-                this.ctx.strokeStyle = grad;
-                this.ctx.beginPath();
-                this.ctx.setLineDash([5, 5]);
-                this.ctx.moveTo(qPos.x, qPos.y);
-                this.ctx.lineTo(rPos.x, rPos.y);
-                this.ctx.stroke();
-                this.ctx.setLineDash([]);
-            });
-        }
-    }
-
-    drawGrid() {
-        this.ctx.strokeStyle = '#1e293b';
-        this.ctx.lineWidth = 1;
-        
-        // Center Lines
-        const midX = this.canvas.width / 2;
-        const midY = this.canvas.height / 2;
-        
-        this.ctx.beginPath();
-        this.ctx.moveTo(midX, 0);
-        this.ctx.lineTo(midX, this.canvas.height);
-        this.ctx.moveTo(0, midY);
-        this.ctx.lineTo(this.canvas.width, midY);
-        this.ctx.stroke();
-    }
-}
-
-/**
- * MAIN APP CONTROLLER
- * Glues the UI, Engine, and Visualizer together.
- */
-const app = {
-    engine: new RAGEngine(),
-    visualizer: null,
-
-    init() {
-        this.visualizer = new VectorVisualizer('vectorCanvas');
-        this.log("System Ready. Waiting for Knowledge Base indexing.");
-    },
-
-    log(msg) {
-        const el = document.getElementById('logs');
-        const time = new Date().toLocaleTimeString();
-        el.innerHTML = `<div><span style="color:var(--primary)">[${time}]</span> ${msg}</div>` + el.innerHTML;
-    },
-
-    processKnowledgeBase() {
-        const text = document.getElementById('corpus').value;
-        const size = parseInt(document.getElementById('chunkSize').value);
-        const overlap = parseInt(document.getElementById('chunkOverlap').value);
-
-        if (!text) return alert("Please enter text.");
-
-        // 1. Chunk
-        const chunks = this.engine.createChunks(text, size, overlap);
-        this.log(`Created ${chunks.length} chunks.`);
-
-        // 2. Embed
-        this.engine.generateEmbeddings();
-        this.log(`Generated vectors for ${chunks.length} chunks.`);
-
-        // 3. Update UI
-        document.getElementById('querySection').style.opacity = '1';
-        document.getElementById('querySection').style.pointerEvents = 'all';
-        document.getElementById('canvasStats').innerText = `Vectors: ${chunks.length}`;
-        
-        // 4. Draw Initial State
-        this.visualizer.draw(this.engine.embeddings);
-    },
-
-    runRetrieval() {
-        const query = document.getElementById('queryInput').value;
-        if (!query) return;
-
-        const topK = parseInt(document.getElementById('topK').value);
-
-        // 1. Search
-        const searchResult = this.engine.search(query, topK);
-        this.log(`Retrieved top ${topK} chunks for query: "${query}"`);
-
-        // 2. Visualize with connections
-        this.visualizer.draw(this.engine.embeddings, searchResult.queryVector, searchResult.results);
-
-        // 3. Show Retrieved Text
-        this.renderRetrievedChunks(searchResult.results);
-
-        // 4. Simulate LLM Generation
-        this.simulateLLM(query, searchResult.results);
-    },
-
-    renderRetrievedChunks(results) {
-        const container = document.getElementById('retrievedChunks');
+    function renderChunks() {
+        const container = getEl('chunksOutput');
         container.innerHTML = '';
-        
-        results.forEach(res => {
+        state.chunks.forEach((chunk, index) => {
             const div = document.createElement('div');
-            div.className = 'chunk-item retrieved';
+            div.className = 'chunk-box fade-in';
+            div.innerHTML = `<strong>Chunk ${index + 1}:</strong><br>${chunk}`;
+            container.appendChild(div);
+        });
+    }
+
+    // --- LOGIC: STEP 2 -> 3 (Embeddings) ---
+    // SIMULATION: Creates a pseudo-vector (array of numbers) based on char codes
+    // In real life, this calls OpenAI or HuggingFace API
+    function getPseudoEmbedding(text) {
+        const dim = 5; // Small dimension for visual simplicity
+        const vector = [];
+        let hash = 0;
+        
+        // Simple hash to seed
+        for(let i=0; i<text.length; i++) hash = text.charCodeAt(i) + ((hash << 5) - hash);
+
+        // Generate deterministic floats
+        for(let i=0; i<dim; i++) {
+            const val = Math.sin(hash + i) * Math.random(); // Added random for variation in visuals
+            vector.push(parseFloat(val.toFixed(4)));
+        }
+        return vector;
+    }
+
+    function generateEmbeddings() {
+        const btn = event.target;
+        btn.classList.add('loading');
+        btn.innerText = "Processing...";
+
+        // Simulate API delay
+        setTimeout(() => {
+            state.embeddings = state.chunks.map((chunk, idx) => ({
+                id: idx,
+                text: chunk,
+                vector: getPseudoEmbedding(chunk)
+            }));
+
+            renderEmbeddings();
+            btn.classList.remove('loading');
+            btn.innerText = "Embeddings Generated";
+            btn.disabled = true;
+            activateStep('step3');
+        }, 800);
+    }
+
+    function renderEmbeddings() {
+        const container = getEl('vectorsOutput');
+        container.innerHTML = '';
+        state.embeddings.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'chunk-box fade-in';
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <strong>Chunk ${res.id}</strong>
-                    <span style="color:var(--accent)">${(res.score * 100).toFixed(1)}% Match</span>
-                </div>
-                <div>${res.text}</div>
+                <strong>Chunk ${item.id + 1}</strong>
+                <div class="vector-visual">[${item.vector.join(', ')}]</div>
             `;
             container.appendChild(div);
         });
-    },
+    }
 
-    simulateLLM(query, context) {
-        const output = document.getElementById('llmResponse');
-        output.innerHTML = '<span class="blink">▌</span> Generating response...';
+    // --- LOGIC: STEP 3 -> 4 (Save to Local Storage) ---
+    function saveToStore() {
+        // Actual LocalStorage usage
+        localStorage.setItem('rag_vectors', JSON.stringify(state.embeddings));
         
-        // Construct a logical answer based on context
-        // This is a "Smart Fake" -> It grabs actual phrases from the context
+        const btn = event.target;
+        btn.innerText = "Saved to LocalStorage!";
+        btn.style.backgroundColor = "var(--success)";
+        setTimeout(() => { activateStep('step4'); }, 500);
+    }
+
+    // --- LOGIC: STEP 4 -> 5 (Retrieval) ---
+    function askQuery() {
+        const query = getEl('userQuery').value;
+        if(!query) return alert("Enter a query");
+
+        const btn = event.target;
+        btn.classList.add('loading');
         
+        // 1. Vectorize Query
+        state.queryEmbedding = getPseudoEmbedding(query);
+
+        // 2. Calculate Similarity (Simulation Logic)
+        // Since our pseudo-vectors are random, we will use a "Keyword Overlap Score" 
+        // mixed with the vector visual to make the demo feel "right" (Top N actually matches text).
+        // In real RAG, this is pure Cosine Similarity of vectors.
+        
+        state.searchResults = state.embeddings.map(doc => {
+            // Real Sim: cosineSimilarity(state.queryEmbedding, doc.vector)
+            // Demo Sim: Overlap score to ensure the visual demo makes sense
+            const words = query.toLowerCase().split(' ');
+            let score = 0;
+            words.forEach(w => {
+                if(doc.text.toLowerCase().includes(w) && w.length > 3) score += 0.3;
+            });
+            // Add some randomness from the vector to simulate vector math nuances
+            score += Math.abs(doc.vector[0]) * 0.1; 
+            
+            return { ...doc, score: score };
+        });
+
+        // Sort by score desc
+        state.searchResults.sort((a, b) => b.score - a.score);
+
         setTimeout(() => {
-            let answer = "";
-            const contextText = context.map(c => c.text).join(" ");
+            btn.classList.remove('loading');
+            renderRetrieval();
+            activateStep('step5');
+        }, 600);
+    }
 
-            // Heuristics for the "Smart Fake"
-            if (contextText.length < 10) {
-                answer = "I cannot answer that based on the available context.";
-            } else {
-                answer = `Based on the retrieved context, `;
-                
-                // Grab the first sentence of the best match if possible
-                const bestMatchSnippet = context[0].text.split('.')[0];
-                answer += `${bestMatchSnippet.toLowerCase()}. `;
-                
-                if (context.length > 1) {
-                    answer += `Additionally, the data suggests that ${context[1].text.substring(0, 30)}... is relevant.`;
-                }
+    function renderRetrieval() {
+        const topK = parseInt(getEl('topKSlider').value);
+        const container = getEl('retrievalOutput');
+        container.innerHTML = '';
 
-                answer += `\n\n(Generated using ${context.length} context chunks)`;
-            }
+        const topResults = state.searchResults.slice(0, topK);
 
-            this.typeWriter(answer, output);
-        }, 1200);
-    },
+        topResults.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'chunk-box fade-in';
+            // Normalize score for display
+            const displayScore = (item.score > 0.9 ? 0.9 : item.score).toFixed(4);
+            div.innerHTML = `
+                <span class="similarity-score">Score: ${displayScore}</span>
+                <strong>Chunk ${item.id + 1}</strong>
+                <p>${item.text}</p>
+            `;
+            container.appendChild(div);
+        });
+    }
 
-    typeWriter(text, element) {
-        element.innerHTML = '';
-        let i = 0;
-        const speed = 25; 
+    // --- LOGIC: STEP 6 (Prompt Construction) ---
+    function constructPrompt() {
+        const topK = parseInt(getEl('topKSlider').value);
+        const relevantChunks = state.searchResults.slice(0, topK).map(c => c.text).join('\n---\n');
+        const query = getEl('userQuery').value;
+
+        const promptText = `
+SYSTEM: You are a helpful assistant. Answer the user query based ONLY on the given context.
+
+<span class="highlight-context">CONTEXT:
+${relevantChunks}</span>
+
+<span class="highlight-query">USER QUERY:
+"${query}"</span>
+        `;
+
+        const display = getEl('promptOutput');
+        display.innerHTML = promptText.trim();
+        activateStep('step6');
+    }
+
+    // --- LOGIC: STEP 7 (LLM Generation) ---
+    function generateAnswer() {
+        const btn = event.target;
+        btn.classList.add('loading');
+        btn.innerText = "Generating...";
         
+        const query = getEl('userQuery').value;
+
+        // SIMULATION: Hardcoded logic to make the result look real based on input
+        // Real app sends the prompt from Step 6 to OpenAI/Anthropic
+        setTimeout(() => {
+        let answer = "Based on the context provided, ";
+        
+        // 1. Check for "hallucination"
+        if(query.toLowerCase().includes("hallucination")) {
+            answer += "RAG reduces hallucinations by retrieving the most similar chunks to the user's query from external sources, ensuring the model relies on up-to-date information.";
+        } 
+        
+        // 2. Check for "split" or "chunk"
+        else if (query.toLowerCase().includes("split") || query.toLowerCase().includes("chunk")) {
+            answer += "documents are split into chunks and turned into vectors. This allows the system to retrieve specific relevant parts instead of processing the whole document.";
+        } 
+
+        // 3. YOUR NEW RULE: Who created this?
+        else if (query.toLowerCase().includes("who created") || query.toLowerCase().includes("author")) {
+            answer += "This interactive tool was created by an awesome developer to demonstrate how RAG works visually!";
+        }
+
+        // 4. YOUR NEW RULE: Weather
+        else if (query.toLowerCase().includes("weather")) {
+            answer += "I cannot determine the weather, as I am a RAG demo relying on the text you pasted above!";
+        }
+
+        // 5. The Fallback (Must be last!)
+        else {
+            answer += "the system retrieves relevant data from external sources, converts them to vectors, and uses them to augment the generation process for more accurate results.";
+        }
+
+        btn.classList.remove('loading');
+        btn.innerText = "Regenerate";
+        
+        typeWriterEffect(answer, 'llmOutput');
+        activateStep('step7');
+    }, 1500);
+    }
+
+    function typeWriterEffect(text, elementId) {
+        const el = getEl(elementId);
+        el.innerHTML = '';
+        let i = 0;
+        const speed = 30; 
+
         function type() {
             if (i < text.length) {
-                element.innerHTML += text.charAt(i);
+                el.innerHTML += text.charAt(i);
                 i++;
                 setTimeout(type, speed);
             }
         }
         type();
     }
-};
 
-// Initialize on Load
-window.addEventListener('DOMContentLoaded', () => {
-    app.init();
-    // Pre-load visual for demo purposes
-    setTimeout(() => app.processKnowledgeBase(), 500);
-});
+    // Initialization check
+    if(localStorage.getItem('rag_vectors')) {
+        console.log("Found existing vectors in storage.");
+        // We could load them, but for a tutorial flow, it's better to start fresh
+        localStorage.removeItem('rag_vectors');
+    }
 
 </script>
+
 </body>
 </html>

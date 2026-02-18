@@ -3,24 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG OS V6 | Manual Input Edition</title>
+    <title>Enterprise RAG OS | V3.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Using Google Icons for professional look -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
         :root {
-            /* V6 DESIGN SYSTEM */
+            /* --- ENTERPRISE LIGHT THEME V3 --- */
             --bg-body: #f1f5f9;       
             --bg-sidebar: #ffffff;    
             --bg-card: #ffffff;       
+            
             --primary: #2563eb;       
             --primary-light: #eff6ff; 
+            
             --text-main: #0f172a;     
             --text-muted: #64748b;    
+            
             --border: #e2e8f0;        
+            
             --success: #10b981;  
+            --warning: #f59e0b;
+            --danger: #ef4444;
+
             --radius: 12px;
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08);
         }
 
         * { box-sizing: border-box; outline: none; margin: 0; padding: 0; }
@@ -76,10 +86,11 @@
         }
         .nav-item:hover { background-color: var(--bg-body); color: var(--text-main); }
         .nav-item.active { background-color: var(--primary-light); color: var(--primary); font-weight: 600; }
+        
         .nav-icon { font-size: 1.2rem; color: #94a3b8; }
         .nav-item.active .nav-icon { color: var(--primary); }
 
-        /* --- MAIN LAYOUT --- */
+        /* --- MAIN AREA & ANALYTICS --- */
         .main-content {
             flex: 1;
             display: flex;
@@ -91,18 +102,27 @@
         .analytics-bar {
             background: white;
             border-bottom: 1px solid var(--border);
-            padding: 15px 40px;
+            padding: 20px 40px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             z-index: 10;
         }
-        .stat-item { border-right: 1px solid var(--border); padding-right: 20px; }
-        .stat-item:last-child { border: none; }
-        .stat-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
-        .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text-main); font-family: 'JetBrains Mono', monospace; }
 
-        /* SCROLL AREA */
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border-right: 1px solid var(--border);
+            padding-right: 20px;
+        }
+        .stat-item:last-child { border: none; }
+        
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--text-main); font-family: 'JetBrains Mono', monospace; }
+        .stat-change { font-size: 0.75rem; color: var(--success); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+        /* SCROLLABLE WORKSPACE */
         .workspace {
             flex: 1;
             overflow-y: auto;
@@ -114,11 +134,11 @@
         h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
         .subtitle { color: var(--text-muted); margin-top: 8px; }
 
-        /* --- CARDS & STEPS --- */
+        /* --- CARDS & UI --- */
         .step-section {
             max-width: 900px;
             margin: 0 auto 50px auto;
-            opacity: 0.4;
+            opacity: 0.5;
             filter: grayscale(1);
             pointer-events: none;
             transition: all 0.4s ease;
@@ -133,74 +153,99 @@
             box-shadow: var(--shadow-sm);
         }
 
-        .card-header { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
-        .card-title { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        .step-num { 
-            background: var(--primary); color: white; width: 24px; height: 24px; 
-            border-radius: 6px; display: flex; align-items: center; justify-content: center; 
-            font-size: 0.8rem; 
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
         }
-
-        /* --- UI ELEMENTS --- */
-        /* Tabs */
-        .tab-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; }
+        
+        /* TABS (For File/Text) */
+        .tab-group { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border); }
         .tab-btn {
-            padding: 8px 16px; background: none; border: none; border-bottom: 2px solid transparent;
-            font-weight: 600; color: var(--text-muted); cursor: pointer;
+            padding: 10px 20px;
+            background: none; border: none;
+            font-weight: 600; color: var(--text-muted);
+            cursor: pointer; border-bottom: 2px solid transparent;
         }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-        /* Inputs */
+        /* DRAG DROP ZONE */
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .drop-zone:hover { border-color: var(--primary); background: #eff6ff; }
+        .drop-zone.dragover { border-color: var(--success); background: #f0fdf4; }
+        .file-icon { font-size: 48px; color: var(--text-muted); margin-bottom: 10px; }
+
+        /* INPUTS */
         textarea, input {
-            width: 100%; padding: 12px; border: 1px solid var(--border);
-            border-radius: 8px; font-family: inherit; font-size: 0.95rem; transition: 0.2s;
+            width: 100%; padding: 12px;
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: inherit; font-size: 0.9rem;
+            transition: 0.2s;
         }
         textarea:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        
-        .big-query-input {
-            padding: 20px; 
-            font-size: 1.1rem; 
-            border: 2px solid var(--border);
-            background-color: #f8fafc;
-        }
-        .big-query-input:focus { 
-            border-color: var(--primary); 
-            background-color: #fff;
-        }
 
-        /* Buttons */
+        .row { display: flex; gap: 20px; margin-top: 20px; }
+        .col { flex: 1; }
+
+        /* BUTTONS */
         .btn {
-            background-color: var(--primary); color: white; border: none;
-            padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+            background-color: var(--primary); color: white;
+            border: none; padding: 10px 20px; border-radius: 8px;
+            font-weight: 600; font-size: 0.9rem; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: 0.2s;
         }
         .btn:hover { background-color: #1d4ed8; transform: translateY(-1px); }
         .btn:disabled { background-color: var(--text-muted); cursor: not-allowed; transform: none; }
 
-        /* Grids */
-        .grid-chunks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+        /* VISUAL GRIDS */
+        .grid-chunks {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 20px;
+        }
         .chunk-card {
-            background: white; border: 1px solid var(--border); padding: 16px; 
-            border-radius: 8px; font-size: 0.85rem; color: var(--text-muted);
+            background: white; border: 1px solid var(--border);
+            border-radius: 8px; padding: 16px; font-size: 0.85rem;
+            color: var(--text-muted); transition: 0.2s;
+            position: relative; overflow: hidden;
         }
-        .chunk-card strong { color: var(--primary); display: block; margin-bottom: 5px; }
+        .chunk-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); color: var(--text-main); }
+        
+        .vector-visual {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+            background: #f1f5f9; padding: 8px; border-radius: 4px;
+            margin-top: 8px; word-break: break-all;
+        }
 
-        /* Output Areas */
+        /* TERMINAL & LLM */
         .terminal {
-            background: #f8fafc; border: 1px solid var(--border); padding: 20px;
-            border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
-            white-space: pre-wrap;
+            background: #f8fafc; border: 1px solid var(--border);
+            padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; line-height: 1.6;
         }
+        .tag { font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 6px; }
+        .tag-sys { background: #e2e8f0; color: #475569; }
+        .tag-ctx { background: #dbeafe; color: #2563eb; }
+        .tag-usr { background: #dcfce7; color: #059669; }
+
         .ai-response {
             background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981;
-            padding: 24px; border-radius: 8px; color: #14532d; font-size: 1rem; line-height: 1.6;
-            margin-top: 20px; 
-            white-space: pre-wrap; 
+            padding: 24px; border-radius: 8px; color: #064e3b;
+            font-size: 1rem; line-height: 1.6;
         }
 
-        .hidden { display: none; }
+        /* UTILS */
+        .hidden { display: none !important; }
         .loader { width: 16px; height: 16px; border: 2px solid white; border-bottom-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
@@ -209,29 +254,22 @@
     <nav class="sidebar">
         <div class="brand">
             <div class="brand-icon"><span class="material-icons-round">hub</span></div>
-            <div>RAG OS <br><span style="font-size:0.7rem; font-weight:500; color:#94a3b8;">Enterprise V6.0</span></div>
+            <div>RAG OS <br><span style="font-size:0.7rem; font-weight:500; color:#94a3b8;">Enterprise V3.0</span></div>
         </div>
         <ul class="nav-steps">
-            <li class="nav-item active" id="nav-step1" onclick="scrollToStep('step1')">
+            <li class="nav-item active" onclick="scrollToStep('step1')">
                 <span class="material-icons-round nav-icon">upload_file</span> Ingestion
             </li>
-            <li class="nav-item" id="nav-step2" onclick="scrollToStep('step2')">
+            <li class="nav-item" onclick="scrollToStep('step2')">
                 <span class="material-icons-round nav-icon">content_cut</span> Chunking
             </li>
-            <li class="nav-item" id="nav-step3" onclick="scrollToStep('step3')">
+            <li class="nav-item" onclick="scrollToStep('step3')">
                 <span class="material-icons-round nav-icon">polyline</span> Embeddings
             </li>
-            <!-- DEDICATED MANUAL QUERY STEP -->
-            <li class="nav-item" id="nav-step4" onclick="scrollToStep('step4')">
-                <span class="material-icons-round nav-icon">keyboard</span> Manual Query
-            </li>
-            <li class="nav-item" id="nav-step5" onclick="scrollToStep('step5')">
+            <li class="nav-item" onclick="scrollToStep('step4')">
                 <span class="material-icons-round nav-icon">search</span> Retrieval
             </li>
-            <li class="nav-item" id="nav-step6" onclick="scrollToStep('step6')">
-                <span class="material-icons-round nav-icon">code</span> Prompting
-            </li>
-            <li class="nav-item" id="nav-step7" onclick="scrollToStep('step7')">
+            <li class="nav-item" onclick="scrollToStep('step7')">
                 <span class="material-icons-round nav-icon">auto_awesome</span> Generation
             </li>
         </ul>
@@ -245,18 +283,22 @@
             <div class="stat-item">
                 <div class="stat-label">Total Tokens</div>
                 <div class="stat-value" id="statTokens">0</div>
+                <div class="stat-change"><span class="material-icons-round" style="font-size:12px">data_usage</span> Live Count</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Est. Cost</div>
+                <div class="stat-label">Est. API Cost</div>
                 <div class="stat-value" id="statCost">$0.0000</div>
+                <div class="stat-change"><span class="material-icons-round" style="font-size:12px">attach_money</span> OpenAI Rate</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">Latency</div>
                 <div class="stat-value" id="statLatency">0ms</div>
+                <div class="stat-change"><span class="material-icons-round" style="font-size:12px">speed</span> Last Action</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Vector Count</div>
+                <div class="stat-label">Vector DB Size</div>
                 <div class="stat-value" id="statVectors">0</div>
+                <div class="stat-change"><span class="material-icons-round" style="font-size:12px">storage</span> Records</div>
             </div>
         </div>
 
@@ -264,31 +306,51 @@
         <div class="workspace">
             <div class="header-area">
                 <h1>RAG Configuration</h1>
-                <p class="subtitle">End-to-end visualization of the Retrieval-Augmented Generation pipeline.</p>
+                <p class="subtitle">Configure your data ingestion, embedding models, and retrieval parameters.</p>
             </div>
 
-            <!-- STEP 1: INGESTION -->
+            <!-- STEP 1: INGESTION (FILE & TEXT) -->
             <section id="step1" class="step-section active">
                 <div class="card">
-                    <div class="card-header"><div class="card-title"><div class="step-num">1</div> Data Ingestion</div></div>
-                    
+                    <div class="card-header">
+                        <div class="card-title">1. Data Ingestion</div>
+                    </div>
+
+                    <!-- Tabs -->
                     <div class="tab-group">
                         <button class="tab-btn active" onclick="switchTab('text')">Paste Text</button>
                         <button class="tab-btn" onclick="switchTab('file')">Upload File</button>
                     </div>
 
+                    <!-- Text Mode -->
                     <div id="mode-text">
-                        <textarea id="sourceText" rows="6" oninput="updateAnalytics()">RAG (Retrieval-Augmented Generation) is a technique that enhances Large Language Models by fetching relevant data from external sources before generating an answer. Instead of relying solely on training data, RAG splits documents into chunks, turns them into vectors, and retrieves the most similar chunks to the user's query. This process reduces hallucinations and ensures the model has up-to-date information.</textarea>
+                        <textarea id="sourceText" rows="6" placeholder="Paste your text here..." oninput="updateAnalytics()">RAG (Retrieval-Augmented Generation) is a technique that enhances Large Language Models by fetching relevant data from external sources before generating an answer. Instead of relying solely on training data, RAG splits documents into chunks, turns them into vectors, and retrieves the most similar chunks to the user's query. This process reduces hallucinations and ensures the model has up-to-date information.</textarea>
                     </div>
 
-                    <div id="mode-file" class="hidden" style="padding:20px; border:2px dashed var(--border); text-align:center; border-radius:8px;">
-                        <span class="material-icons-round" style="font-size:32px; color:var(--text-muted);">cloud_upload</span>
-                        <p>Drag and drop or <button class="btn" style="padding:4px 8px; font-size:0.8rem;" onclick="document.getElementById('fileInput').click()">Browse</button></p>
-                        <input type="file" id="fileInput" class="hidden">
+                    <!-- File Mode -->
+                    <div id="mode-file" class="hidden">
+                        <div class="drop-zone" id="dropZone">
+                            <span class="material-icons-round file-icon">cloud_upload</span>
+                            <h3>Drag & Drop files here</h3>
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:5px;">Supports .txt, .md, .json, .csv</p>
+                            <input type="file" id="fileInput" style="display:none" accept=".txt,.md,.json,.csv">
+                            <button class="btn" style="margin-top:15px; background:white; color:var(--text-main); border:1px solid var(--border);" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+                        </div>
+                        <div id="fileName" class="hidden" style="margin-top:10px; font-weight:600; color:var(--primary); text-align:center;"></div>
                     </div>
 
-                    <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="runChunking()">Next: Chunk Data &rarr;</button>
+                    <div class="row">
+                        <div class="col">
+                            <label>Chunk Size</label>
+                            <input type="number" id="chunkSize" value="100">
+                        </div>
+                        <div class="col">
+                            <label>Overlap</label>
+                            <input type="number" id="chunkOverlap" value="20">
+                        </div>
+                        <div class="col" style="display:flex; align-items:flex-end;">
+                            <button class="btn" onclick="runChunking()">Start Processing <span class="material-icons-round" style="font-size:16px;">arrow_forward</span></button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -296,14 +358,10 @@
             <!-- STEP 2: CHUNKING -->
             <section id="step2" class="step-section">
                 <div class="card">
-                    <div class="card-header"><div class="card-title"><div class="step-num">2</div> Chunk Inspection</div></div>
-                    <div style="display:flex; gap:20px; margin-bottom:20px;">
-                        <div style="flex:1"><label>Chunk Size</label><input type="number" id="chunkSize" value="100"></div>
-                        <div style="flex:1"><label>Overlap</label><input type="number" id="chunkOverlap" value="20"></div>
-                    </div>
+                    <div class="card-header"><div class="card-title">2. Chunk Segments</div></div>
                     <div id="chunksOutput" class="grid-chunks"></div>
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="runEmbeddings(this)">Next: Vectorize &rarr;</button>
+                        <button class="btn" onclick="runEmbeddings(this)">Generate Embeddings</button>
                     </div>
                 </div>
             </section>
@@ -311,55 +369,43 @@
             <!-- STEP 3: EMBEDDINGS -->
             <section id="step3" class="step-section">
                 <div class="card">
-                    <div class="card-header"><div class="card-title"><div class="step-num">3</div> Vector Store</div></div>
+                    <div class="card-header"><div class="card-title">3. Vector Index</div></div>
                     <div id="vectorsOutput" class="grid-chunks"></div>
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="saveVectors(this)">Next: Save Index &rarr;</button>
+                        <button class="btn" onclick="saveVectors(this)">Save to Vector DB</button>
                     </div>
                 </div>
             </section>
 
-            <!-- STEP 4: USER QUERY (MANUAL INPUT) -->
+            <!-- STEP 4: RETRIEVAL -->
             <section id="step4" class="step-section">
-                <div class="card" style="border-color: var(--primary);">
-                    <div class="card-header"><div class="card-title"><div class="step-num">4</div> Manual Query</div></div>
-                    <p style="color:var(--text-muted); margin-bottom:15px;">The Knowledge Base is indexed. Please type your question manually below.</p>
-                    
-                    <!-- EMPTY INPUT FOR MANUAL TYPING -->
-                    <input type="text" id="userQuery" class="big-query-input" placeholder="Type your question here (e.g., What is RAG?)..." autocomplete="off">
-                    
-                    <div style="margin-top:10px; display:flex; gap:10px;">
-                        <button class="btn" style="background:#e2e8f0; color:#475569; font-size:0.8rem;" onclick="document.getElementById('userQuery').value='How does RAG reduce hallucinations?'">Use Example</button>
-                    </div>
-
-                    <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="runRetrieval(this)">Next: Run Search &rarr;</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- STEP 5: RETRIEVAL -->
-            <section id="step5" class="step-section">
                 <div class="card">
-                    <div class="card-header"><div class="card-title"><div class="step-num">5</div> Retrieval Results</div></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <label>Top Matches (K): <span id="topKVal" style="color:var(--primary)">2</span></label>
+                    <div class="card-header"><div class="card-title">4. Semantic Search</div></div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="userQuery" value="How does RAG reduce hallucinations?">
+                        <button class="btn" onclick="runRetrieval(this)">Search</button>
+                    </div>
+                    
+                    <div style="margin:20px 0; display:flex; justify-content:space-between; align-items:center;">
+                        <label>Top K Results: <span id="topKVal" style="color:var(--primary)">2</span></label>
                         <input type="range" id="topK" min="1" max="5" value="2" oninput="document.getElementById('topKVal').innerText=this.value">
                     </div>
+
                     <div id="retrievalOutput" class="grid-chunks"></div>
+                    
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="buildPrompt()">Next: Build Prompt &rarr;</button>
+                        <button class="btn" onclick="buildPrompt()">Construct Prompt</button>
                     </div>
                 </div>
             </section>
 
-            <!-- STEP 6: PROMPT -->
+            <!-- STEP 6: PROMPT (Hidden step in logic, visualized) -->
             <section id="step6" class="step-section">
                 <div class="card">
-                    <div class="card-header"><div class="card-title"><div class="step-num">6</div> Prompt Engineering</div></div>
+                    <div class="card-header"><div class="card-title">5. Prompt Engineering</div></div>
                     <div id="promptOutput" class="terminal"></div>
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="runLLM(this)">Next: Generate Answer &rarr;</button>
+                        <button class="btn" onclick="runLLM(this)">Generate Answer</button>
                     </div>
                 </div>
             </section>
@@ -367,11 +413,8 @@
             <!-- STEP 7: GENERATION -->
             <section id="step7" class="step-section">
                 <div class="card">
-                    <div class="card-header"><div class="card-title"><div class="step-num">7</div> AI Response</div></div>
+                    <div class="card-header"><div class="card-title">6. Final Output</div></div>
                     <div id="llmOutput" class="ai-response hidden"></div>
-                    <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" style="background:var(--text-main)" onclick="location.reload()">Reset System</button>
-                    </div>
                 </div>
             </section>
 
@@ -379,185 +422,226 @@
     </div>
 
 <script>
-    /* --- ENGINE V6 (Manual Input Focus) --- */
+    /* --- LOGIC ENGINE V3 --- */
     const state = { chunks: [], embeddings: [], searchResults: [] };
     const get = (id) => document.getElementById(id);
-    const delay = (ms) => new Promise(r => setTimeout(r, ms));
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    
+    // --- ANALYTICS ---
+    function updateAnalytics() {
+        const text = get('sourceText').value || "";
+        const tokens = Math.ceil(text.length / 4); // Approximation
+        const cost = (tokens / 1000) * 0.0005; // Fake pricing $0.0005 per 1k
 
-    // Navigation
-    function scrollToStep(id) {
-        // Sidebar update
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        get('nav-' + id).classList.add('active');
-        
-        // Main view update
-        const el = get(id);
-        el.classList.add('active');
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        get('statTokens').innerText = tokens.toLocaleString();
+        get('statCost').innerText = "$" + cost.toFixed(5);
+    }
+    
+    function setLatency(start) {
+        const ms = Date.now() - start;
+        get('statLatency').innerText = ms + "ms";
+    }
 
-        // Auto-focus Input if Step 4
-        if(id === 'step4') {
-            setTimeout(() => get('userQuery').focus(), 500);
+    // --- TABS & FILE HANDLING ---
+    function switchTab(mode) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        if(mode === 'text') {
+            get('mode-text').classList.remove('hidden');
+            get('mode-file').classList.add('hidden');
+        } else {
+            get('mode-text').classList.add('hidden');
+            get('mode-file').classList.remove('hidden');
         }
     }
 
-    // Analytics
-    function updateAnalytics() {
-        const text = get('sourceText').value || "";
-        const tokens = Math.ceil(text.length / 4); 
-        get('statTokens').innerText = tokens.toLocaleString();
-        get('statCost').innerText = "$" + ((tokens/1000)*0.0005).toFixed(5);
+    // Drag & Drop
+    const dropZone = get('dropZone');
+    const fileInput = get('fileInput');
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault(); dropZone.classList.remove('dragover');
+        handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    function handleFile(file) {
+        if(!file) return;
+        get('fileName').innerText = `Selected: ${file.name}`;
+        get('fileName').classList.remove('hidden');
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            get('sourceText').value = e.target.result;
+            updateAnalytics();
+            switchTab('text'); // Switch back to see content
+        };
+        reader.readAsText(file);
     }
-    
-    // 1. Chunking
+
+    // --- STEP NAVIGATION ---
+    function scrollToStep(id) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        // Find closest match for nav highlighting
+        event?.currentTarget?.classList.add('active');
+        
+        const el = get(id);
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // --- CORE LOGIC ---
     function runChunking() {
         const start = Date.now();
         const text = get('sourceText').value.trim();
         const size = parseInt(get('chunkSize').value);
-        
+        const overlap = parseInt(get('chunkOverlap').value);
+
+        if(!text) return alert("Please enter text or upload a file.");
+
         state.chunks = [];
-        for(let i=0; i<text.length; i+=size) state.chunks.push(text.slice(i, i+size));
-        
-        const out = get('chunksOutput');
-        out.innerHTML = '';
-        state.chunks.forEach((c, i) => {
-            out.innerHTML += `<div class="chunk-card"><strong>Chunk ${i+1}</strong>${c}</div>`;
+        let i = 0;
+        while(i < text.length) {
+            state.chunks.push(text.slice(i, i+size));
+            if(i+size >= text.length) break;
+            i += (size - overlap);
+        }
+
+        const container = get('chunksOutput');
+        container.innerHTML = '';
+        state.chunks.forEach((c, idx) => {
+            container.innerHTML += `
+                <div class="chunk-card fade-in">
+                    <strong style="color:var(--primary)">Chunk ${idx+1}</strong>
+                    <div style="margin-top:5px; color:#475569;">${c}</div>
+                </div>`;
         });
-        
-        get('statLatency').innerText = (Date.now()-start) + "ms";
+
+        setLatency(start);
         scrollToStep('step2');
     }
 
-    // 2. Embeddings
     async function runEmbeddings(btn) {
-        btn.innerHTML = `<div class="loader"></div> Processing`;
-        await delay(600);
-        
+        const start = Date.now();
+        btn.disabled = true; btn.innerHTML = `<div class="loader"></div> Processing`;
+        await sleep(600);
+
         state.embeddings = state.chunks.map((t, i) => ({
-            id: i, text: t, vector: Array.from({length: 4}, () => Math.random().toFixed(4))
+            id: i, text: t,
+            vector: Array.from({length: 5}, () => Math.random().toFixed(4))
         }));
 
-        const out = get('vectorsOutput');
-        out.innerHTML = '';
+        const container = get('vectorsOutput');
+        container.innerHTML = '';
         state.embeddings.forEach(item => {
-            out.innerHTML += `<div class="chunk-card"><strong>ID: ${item.id}</strong><div style="font-family:monospace; background:#f1f5f9; padding:5px;">[${item.vector.join(', ')}]</div></div>`;
+            container.innerHTML += `
+                <div class="chunk-card fade-in">
+                    <strong>ID: ${item.id}</strong>
+                    <div class="vector-visual">[${item.vector.join(', ')}]</div>
+                </div>`;
         });
 
+        setLatency(start);
         btn.innerHTML = "Done";
         scrollToStep('step3');
     }
 
-    // 3. Save
     async function saveVectors(btn) {
-        btn.innerHTML = `<div class="loader"></div> Indexing`;
-        await delay(400);
+        const start = Date.now();
+        btn.innerHTML = `<div class="loader"></div> Saving`;
+        await sleep(400);
         get('statVectors').innerText = state.embeddings.length;
-        btn.innerHTML = "Saved";
-        scrollToStep('step4'); // Jumps to MANUAL QUERY
+        btn.innerHTML = "Saved"; btn.disabled = true;
+        setLatency(start);
+        scrollToStep('step4');
     }
 
-    // 4. Retrieval (Manual Input Check)
     async function runRetrieval(btn) {
-        const query = get('userQuery').value.trim();
+        const start = Date.now();
+        btn.disabled = true; btn.innerHTML = `<div class="loader"></div>`;
+        await sleep(800);
+
+        const query = get('userQuery').value.toLowerCase();
         
-        // VALIDATION: Ensure user typed something
-        if(!query) {
-            alert("Please type a query in the input box!");
-            get('userQuery').focus();
-            return;
-        }
-
-        btn.innerHTML = `<div class="loader"></div> Searching`;
-        await delay(800);
-
+        // Sim Logic
         state.searchResults = state.embeddings.map(doc => {
             let score = 0.1;
-            const qLower = query.toLowerCase();
-            qLower.split(' ').forEach(w => {
+            query.split(' ').forEach(w => {
                 if(w.length > 3 && doc.text.toLowerCase().includes(w)) score += 0.3;
             });
-            return { ...doc, score: Math.min(score + Math.random()*0.1, 0.99) };
+            score += Math.random()*0.1;
+            if(score > 0.95) score = 0.95;
+            return { ...doc, score };
         }).sort((a,b) => b.score - a.score);
 
-        const out = get('retrievalOutput');
-        out.innerHTML = '';
         const k = parseInt(get('topK').value);
+        const container = get('retrievalOutput');
+        container.innerHTML = '';
+        
         state.searchResults.slice(0, k).forEach(item => {
-            const pct = (item.score*100).toFixed(0);
-            out.innerHTML += `<div class="chunk-card" style="border-color:var(--success)">
-                <div style="display:flex; justify-content:space-between"><strong>Chunk ${item.id+1}</strong><span style="color:var(--success)">${pct}%</span></div>
-                <div>${item.text}</div>
-            </div>`;
+            const pct = (item.score * 100).toFixed(0);
+            container.innerHTML += `
+                <div class="chunk-card fade-in" style="border-color:var(--success)">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>Chunk ${item.id+1}</strong>
+                        <span style="color:var(--success); font-weight:bold;">${pct}%</span>
+                    </div>
+                    <div style="font-size:0.8rem; margin-top:5px;">${item.text}</div>
+                </div>`;
         });
 
-        btn.innerHTML = "Search Complete";
-        scrollToStep('step5');
+        setLatency(start);
+        btn.innerHTML = "Search"; btn.disabled = false;
     }
 
-    // 5. Prompt
     function buildPrompt() {
         const k = parseInt(get('topK').value);
-        const ctx = state.searchResults.slice(0, k).map(c => c.text).join('\n---\n');
-        get('promptOutput').innerText = `SYSTEM: Answer using context.\n\nCONTEXT:\n${ctx}\n\nUSER:\n${get('userQuery').value}`;
+        const context = state.searchResults.slice(0, k).map(c => c.text).join('\n');
+        const query = get('userQuery').value;
+        
+        get('promptOutput').innerHTML = `
+<span class="tag tag-sys">SYSTEM</span> Answer using only context.
+<br><br>
+<span class="tag tag-ctx">CONTEXT</span>
+<br>${context}
+<br><br>
+<span class="tag tag-usr">QUERY</span>
+<br>${query}`;
+        
         scrollToStep('step6');
     }
 
-    // 6. Generate (Smart Fallback)
     async function runLLM(btn) {
-        btn.innerHTML = `<div class="loader"></div> Generating`;
-        await delay(1500);
+        btn.disabled = true; btn.innerHTML = `<div class="loader"></div> Generating`;
+        await sleep(1500);
 
         const query = get('userQuery').value.toLowerCase();
-        let ans = "";
+        let ans = "Based on the context, RAG retrieves relevant information to answer your query accurately.";
         
-        // Dynamic Response Logic
-        if(query.includes("who created")) {
-            ans = "This Enterprise RAG System V6 was created by an expert developer to demonstrate the power of Semantic Search.";
-        } else if(query.includes("hallucination")) {
-            ans = "Based on the context, RAG reduces hallucinations by fetching relevant data from external sources, ensuring the model relies on up-to-date information.";
-        } else if(query.includes("chunk")) {
-            ans = "Chunking involves splitting documents into smaller segments to be turned into vectors, allowing for precise information retrieval.";
-        } else {
-            // Generic fallback that sounds smart
-            ans = `Based on the provided context, I have analyzed your query about "${query}". The retrieved documents suggest that RAG systems rely on splitting data into chunks and using vector similarity to find the best match.`;
-        }
+        // Custom Rules
+        if(query.includes("who created")) ans = "This Enterprise RAG OS was architected by an expert developer.";
+        if(query.includes("weather")) ans = "I cannot determine weather from the provided text context.";
+        if(query.includes("hallucination")) ans = "RAG reduces hallucinations by grounding answers in retrieved external data.";
 
         const out = get('llmOutput');
         out.classList.remove('hidden');
-        out.innerText = ""; 
-        
+        out.innerText = "";
         let i = 0;
-        function type() {
+        const type = () => {
             if(i < ans.length) {
-                out.innerText += ans.charAt(i);
-                i++;
-                setTimeout(type, 20);
+                out.innerText += ans.charAt(i); i++; setTimeout(type, 20);
             }
-        }
+        };
         type();
-
-        btn.innerHTML = "Regenerate";
+        
+        btn.innerHTML = "Regenerate"; btn.disabled = false;
         scrollToStep('step7');
     }
-    
+
     // Init
     updateAnalytics();
-    
-    // Tabs logic
-    function switchTab(mode) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        if(mode === 'text') { get('mode-text').classList.remove('hidden'); get('mode-file').classList.add('hidden'); }
-        else { get('mode-text').classList.add('hidden'); get('mode-file').classList.remove('hidden'); }
-    }
-    
-    // File Input
-    get('fileInput').addEventListener('change', function() {
-        const reader = new FileReader();
-        reader.onload = function(){ get('sourceText').value = reader.result; switchTab('text'); updateAnalytics(); };
-        reader.readAsText(this.files[0]);
-    });
-
 </script>
 </body>
 </html>

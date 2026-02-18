@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG OS V4 (Stable)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>RAG OS V5 | Enterprise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
         :root {
-            --bg-body: #f8fafc;       
+            /* V3/V5 DESIGN SYSTEM */
+            --bg-body: #f1f5f9;       
             --bg-sidebar: #ffffff;    
             --bg-card: #ffffff;       
             --primary: #2563eb;       
-            --primary-subtle: #eff6ff; 
+            --primary-light: #eff6ff; 
             --text-main: #0f172a;     
             --text-muted: #64748b;    
             --border: #e2e8f0;        
             --success: #10b981;  
             --radius: 12px;
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08);
         }
 
         * { box-sizing: border-box; outline: none; margin: 0; padding: 0; }
@@ -30,372 +31,473 @@
             color: var(--text-main);
             height: 100vh;
             display: flex;
+            overflow: hidden; 
         }
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: 250px;
-            background: var(--bg-sidebar);
+            width: 260px;
+            background-color: var(--bg-sidebar);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 20px;
-            flex-shrink: 0;
+            padding: 24px;
+            z-index: 20;
         }
 
         .brand {
-            font-size: 1.2rem; font-weight: 800; color: var(--text-main);
-            margin-bottom: 30px; display: flex; align-items: center; gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .brand span { color: var(--primary); }
+        .brand-icon {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
 
+        .nav-steps { list-style: none; display: flex; flex-direction: column; gap: 4px; }
         .nav-item {
-            padding: 12px; border-radius: 8px; font-size: 0.9rem;
-            color: var(--text-muted); cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; gap: 10px; font-weight: 500;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px;
         }
-        .nav-item:hover { background: var(--bg-body); color: var(--text-main); }
-        .nav-item.active { background: var(--primary-subtle); color: var(--primary); font-weight: 600; }
-        .nav-item.disabled { opacity: 0.5; pointer-events: none; }
+        .nav-item:hover { background-color: var(--bg-body); color: var(--text-main); }
+        .nav-item.active { background-color: var(--primary-light); color: var(--primary); font-weight: 600; }
+        .nav-icon { font-size: 1.2rem; color: #94a3b8; }
+        .nav-item.active .nav-icon { color: var(--primary); }
 
-        /* --- MAIN --- */
-        .main {
+        /* --- MAIN LAYOUT --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ANALYTICS BAR */
+        .analytics-bar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 15px 40px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            z-index: 10;
+        }
+        .stat-item { border-right: 1px solid var(--border); padding-right: 20px; }
+        .stat-item:last-child { border: none; }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text-main); font-family: 'JetBrains Mono', monospace; }
+
+        /* SCROLL AREA */
+        .workspace {
             flex: 1;
             overflow-y: auto;
-            padding: 40px;
+            padding: 40px 60px;
             scroll-behavior: smooth;
         }
 
-        .container { max-width: 800px; margin: 0 auto; }
+        .header-area { margin-bottom: 40px; }
+        h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+        .subtitle { color: var(--text-muted); margin-top: 8px; }
 
-        /* --- CARDS --- */
-        .step-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 30px;
-            margin-bottom: 40px;
-            box-shadow: var(--shadow);
+        /* --- CARDS & STEPS --- */
+        .step-section {
+            max-width: 900px;
+            margin: 0 auto 50px auto;
             opacity: 0.4;
-            pointer-events: none;
             filter: grayscale(1);
-            transition: all 0.3s ease;
+            pointer-events: none;
+            transition: all 0.4s ease;
         }
-        .step-card.active { opacity: 1; pointer-events: all; filter: grayscale(0); border-color: #cbd5e1; }
+        .step-section.active { opacity: 1; filter: grayscale(0); pointer-events: all; }
 
-        h2 { font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .step-badge { 
-            background: var(--text-main); color: white; width: 24px; height: 24px; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-size: 0.75rem; 
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 32px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
 
-        /* --- INPUTS --- */
-        label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
+        .card-header { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
+        .card-title { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .step-num { 
+            background: var(--primary); color: white; width: 24px; height: 24px; 
+            border-radius: 6px; display: flex; align-items: center; justify-content: center; 
+            font-size: 0.8rem; 
+        }
+
+        /* --- UI ELEMENTS --- */
+        /* Tabs */
+        .tab-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn {
+            padding: 8px 16px; background: none; border: none; border-bottom: 2px solid transparent;
+            font-weight: 600; color: var(--text-muted); cursor: pointer;
+        }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* Inputs */
         textarea, input {
             width: 100%; padding: 12px; border: 1px solid var(--border);
-            border-radius: 8px; font-family: inherit; font-size: 0.95rem;
-            transition: 0.2s; background: #fff;
+            border-radius: 8px; font-family: inherit; font-size: 0.95rem; transition: 0.2s;
         }
         textarea:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-
-        /* --- BUTTONS --- */
-        .btn {
-            background: var(--primary); color: white; border: none;
-            padding: 12px 20px; border-radius: 8px; font-weight: 600;
-            cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
-            font-size: 0.9rem; transition: 0.2s;
-        }
-        .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
-        .btn:disabled { background: var(--text-muted); transform: none; cursor: not-allowed; }
-        .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
-        .btn-secondary:hover { border-color: var(--text-main); }
-
-        /* --- VISUALS --- */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
-        .chunk-box {
-            border: 1px solid var(--border); padding: 15px; border-radius: 8px;
-            font-size: 0.85rem; background: #f8fafc; word-wrap: break-word;
-        }
-        .vector-text {
-            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
-            color: var(--text-muted); margin-top: 5px; background: #e2e8f0; padding: 4px; border-radius: 4px;
-        }
-
-        /* --- QUERY INPUT (THE MISSING PIECE) --- */
-        .big-input {
-            font-size: 1.1rem; padding: 15px; border: 2px solid var(--border);
-        }
-        .big-input:focus { border-color: var(--primary); }
-
-        /* --- TERMINAL & OUTPUT --- */
-        .terminal {
-            background: #1e293b; color: #e2e8f0; padding: 20px;
-            border-radius: 8px; font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem; white-space: pre-wrap; line-height: 1.6;
-        }
         
-        .llm-output {
-            background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #10b981;
-            padding: 25px; border-radius: 8px; font-size: 1rem; color: #14532d;
-            line-height: 1.6; margin-top: 10px; 
-            white-space: pre-wrap; /* CRITICAL FOR SPACING BUG */
+        .big-query-input {
+            padding: 20px; font-size: 1.1rem; border: 2px solid var(--border);
+        }
+        .big-query-input:focus { border-color: var(--primary); }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn:hover { background-color: #1d4ed8; transform: translateY(-1px); }
+        .btn:disabled { background-color: var(--text-muted); cursor: not-allowed; transform: none; }
+
+        /* Grids */
+        .grid-chunks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+        .chunk-card {
+            background: white; border: 1px solid var(--border); padding: 16px; 
+            border-radius: 8px; font-size: 0.85rem; color: var(--text-muted);
+        }
+        .chunk-card strong { color: var(--primary); display: block; margin-bottom: 5px; }
+
+        /* Output Areas */
+        .terminal {
+            background: #f8fafc; border: 1px solid var(--border); padding: 20px;
+            border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            white-space: pre-wrap;
+        }
+        .ai-response {
+            background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981;
+            padding: 24px; border-radius: 8px; color: #14532d; font-size: 1rem; line-height: 1.6;
+            margin-top: 20px; 
+            white-space: pre-wrap; /* FIX FOR SPACING BUG */
         }
 
         .hidden { display: none; }
+        .loader { width: 16px; height: 16px; border: 2px solid white; border-bottom-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="brand"><span>⚡</span> RAG OS V4</div>
-        <div class="nav-item active" id="nav1">1. Ingest</div>
-        <div class="nav-item" id="nav2">2. Chunk</div>
-        <div class="nav-item" id="nav3">3. Embed</div>
-        <div class="nav-item" id="nav4">4. Query</div>
-        <div class="nav-item" id="nav5">5. Retrieve</div>
-        <div class="nav-item" id="nav6">6. Prompt</div>
-        <div class="nav-item" id="nav7">7. Generate</div>
-    </div>
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><span class="material-icons-round">hub</span></div>
+            <div>RAG OS <br><span style="font-size:0.7rem; font-weight:500; color:#94a3b8;">Enterprise V5.0</span></div>
+        </div>
+        <ul class="nav-steps">
+            <li class="nav-item active" id="nav-step1" onclick="scrollToStep('step1')">
+                <span class="material-icons-round nav-icon">upload_file</span> Ingestion
+            </li>
+            <li class="nav-item" id="nav-step2" onclick="scrollToStep('step2')">
+                <span class="material-icons-round nav-icon">content_cut</span> Chunking
+            </li>
+            <li class="nav-item" id="nav-step3" onclick="scrollToStep('step3')">
+                <span class="material-icons-round nav-icon">polyline</span> Embeddings
+            </li>
+            <!-- NEW DEDICATED QUERY STEP IN SIDEBAR -->
+            <li class="nav-item" id="nav-step4" onclick="scrollToStep('step4')">
+                <span class="material-icons-round nav-icon">question_answer</span> User Query
+            </li>
+            <li class="nav-item" id="nav-step5" onclick="scrollToStep('step5')">
+                <span class="material-icons-round nav-icon">search</span> Retrieval
+            </li>
+            <li class="nav-item" id="nav-step6" onclick="scrollToStep('step6')">
+                <span class="material-icons-round nav-icon">code</span> Prompting
+            </li>
+            <li class="nav-item" id="nav-step7" onclick="scrollToStep('step7')">
+                <span class="material-icons-round nav-icon">auto_awesome</span> Generation
+            </li>
+        </ul>
+    </nav>
 
-    <div class="main">
-        <div class="container">
-            
-            <!-- STEP 1: INGEST -->
-            <div id="step1" class="step-card active">
-                <h2><span class="step-badge">1</span> Source Data</h2>
-                <label>Paste Text (Knowledge Base)</label>
-                <textarea id="sourceText" rows="5">RAG (Retrieval-Augmented Generation) is a technique that enhances Large Language Models by fetching relevant data from external sources before generating an answer. Instead of relying solely on training data, RAG splits documents into chunks, turns them into vectors, and retrieves the most similar chunks to the user's query. This process reduces hallucinations and ensures the model has up-to-date information.</textarea>
-                
-                <div style="display:flex; gap: 15px; margin-top: 15px;">
-                    <div style="flex:1">
-                        <label>Chunk Size</label>
-                        <input type="number" id="chunkSize" value="100">
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        
+        <!-- ANALYTICS DASHBOARD -->
+        <div class="analytics-bar">
+            <div class="stat-item">
+                <div class="stat-label">Total Tokens</div>
+                <div class="stat-value" id="statTokens">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Est. Cost</div>
+                <div class="stat-value" id="statCost">$0.0000</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Latency</div>
+                <div class="stat-value" id="statLatency">0ms</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Vector Count</div>
+                <div class="stat-value" id="statVectors">0</div>
+            </div>
+        </div>
+
+        <!-- WORKSPACE -->
+        <div class="workspace">
+            <div class="header-area">
+                <h1>RAG Configuration</h1>
+                <p class="subtitle">End-to-end visualization of the Retrieval-Augmented Generation pipeline.</p>
+            </div>
+
+            <!-- STEP 1: INGESTION -->
+            <section id="step1" class="step-section active">
+                <div class="card">
+                    <div class="card-header"><div class="card-title"><div class="step-num">1</div> Data Ingestion</div></div>
+                    
+                    <div class="tab-group">
+                        <button class="tab-btn active" onclick="switchTab('text')">Paste Text</button>
+                        <button class="tab-btn" onclick="switchTab('file')">Upload File</button>
                     </div>
-                    <div style="flex:1">
-                        <label>Overlap</label>
-                        <input type="number" id="chunkOverlap" value="20">
+
+                    <div id="mode-text">
+                        <textarea id="sourceText" rows="6" oninput="updateAnalytics()">RAG (Retrieval-Augmented Generation) is a technique that enhances Large Language Models by fetching relevant data from external sources before generating an answer. Instead of relying solely on training data, RAG splits documents into chunks, turns them into vectors, and retrieves the most similar chunks to the user's query. This process reduces hallucinations and ensures the model has up-to-date information.</textarea>
+                    </div>
+
+                    <div id="mode-file" class="hidden" style="padding:20px; border:2px dashed var(--border); text-align:center; border-radius:8px;">
+                        <span class="material-icons-round" style="font-size:32px; color:var(--text-muted);">cloud_upload</span>
+                        <p>Drag and drop or <button class="btn" style="padding:4px 8px; font-size:0.8rem;" onclick="document.getElementById('fileInput').click()">Browse</button></p>
+                        <input type="file" id="fileInput" class="hidden">
+                    </div>
+
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn" onclick="runChunking()">Next: Chunk Data &rarr;</button>
                     </div>
                 </div>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="btn" onclick="runChunking()">Next: Chunk Text &rarr;</button>
-                </div>
-            </div>
+            </section>
 
-            <!-- STEP 2: CHUNK -->
-            <div id="step2" class="step-card">
-                <h2><span class="step-badge">2</span> Data Chunking</h2>
-                <div id="chunksOutput" class="grid"></div>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="btn" onclick="runEmbeddings(this)">Next: Generate Vectors &rarr;</button>
+            <!-- STEP 2: CHUNKING -->
+            <section id="step2" class="step-section">
+                <div class="card">
+                    <div class="card-header"><div class="card-title"><div class="step-num">2</div> Chunk Inspection</div></div>
+                    <div style="display:flex; gap:20px; margin-bottom:20px;">
+                        <div style="flex:1"><label>Chunk Size</label><input type="number" id="chunkSize" value="100"></div>
+                        <div style="flex:1"><label>Overlap</label><input type="number" id="chunkOverlap" value="20"></div>
+                    </div>
+                    <div id="chunksOutput" class="grid-chunks"></div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn" onclick="runEmbeddings(this)">Next: Vectorize &rarr;</button>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- STEP 3: EMBED -->
-            <div id="step3" class="step-card">
-                <h2><span class="step-badge">3</span> Vector Embeddings</h2>
-                <div id="vectorsOutput" class="grid"></div>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="btn" onclick="saveToDB(this)">Next: Save to Index &rarr;</button>
+            <!-- STEP 3: EMBEDDINGS -->
+            <section id="step3" class="step-section">
+                <div class="card">
+                    <div class="card-header"><div class="card-title"><div class="step-num">3</div> Vector Store</div></div>
+                    <div id="vectorsOutput" class="grid-chunks"></div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn" onclick="saveVectors(this)">Next: Save Index &rarr;</button>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- STEP 4: QUERY (DEDICATED STEP) -->
-            <div id="step4" class="step-card">
-                <h2><span class="step-badge">4</span> User Query</h2>
-                <p style="color:var(--text-muted); margin-bottom:15px;">Now that the data is indexed, enter a question to search against it.</p>
-                
-                <input type="text" id="userQuery" class="big-input" value="How does RAG reduce hallucinations?">
-                
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="btn" onclick="runRetrieval(this)">Next: Run Semantic Search &rarr;</button>
+            <!-- STEP 4: USER QUERY (NEW DEDICATED STEP) -->
+            <section id="step4" class="step-section">
+                <div class="card" style="border-color: var(--primary);">
+                    <div class="card-header"><div class="card-title"><div class="step-num">4</div> User Query</div></div>
+                    <p style="color:var(--text-muted); margin-bottom:15px;">The Knowledge Base is ready. Enter your question below.</p>
+                    
+                    <input type="text" id="userQuery" class="big-query-input" value="How does RAG reduce hallucinations?">
+                    
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn" onclick="runRetrieval(this)">Next: Run Semantic Search &rarr;</button>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- STEP 5: RETRIEVE -->
-            <div id="step5" class="step-card">
-                <h2><span class="step-badge">5</span> Retrieval Results</h2>
-                <div style="margin-bottom:15px; display:flex; justify-content:space-between;">
-                    <label>Top Matches (K)</label>
-                    <input type="range" min="1" max="3" value="2" id="topK" onchange="document.getElementById('kVal').innerText=this.value">
-                    <span id="kVal">2</span>
+            <!-- STEP 5: RETRIEVAL -->
+            <section id="step5" class="step-section">
+                <div class="card">
+                    <div class="card-header"><div class="card-title"><div class="step-num">5</div> Retrieval Results</div></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <label>Top Matches (K): <span id="topKVal" style="color:var(--primary)">2</span></label>
+                        <input type="range" id="topK" min="1" max="5" value="2" oninput="document.getElementById('topKVal').innerText=this.value">
+                    </div>
+                    <div id="retrievalOutput" class="grid-chunks"></div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn" onclick="buildPrompt()">Next: Build Prompt &rarr;</button>
+                    </div>
                 </div>
-                <div id="retrievalOutput" class="grid"></div>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="btn" onclick="buildPrompt()">Next: Construct Prompt &rarr;</button>
-                </div>
-            </div>
+            </section>
 
             <!-- STEP 6: PROMPT -->
-            <div id="step6" class="step-card">
-                <h2><span class="step-badge">6</span> System Prompt</h2>
-                <div id="promptOutput" class="terminal"></div>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="btn" onclick="runLLM(this)">Next: Generate Answer &rarr;</button>
+            <section id="step6" class="step-section">
+                <div class="card">
+                    <div class="card-header"><div class="card-title"><div class="step-num">6</div> Prompt Engineering</div></div>
+                    <div id="promptOutput" class="terminal"></div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn" onclick="runLLM(this)">Next: Generate Answer &rarr;</button>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- STEP 7: GENERATE -->
-            <div id="step7" class="step-card">
-                <h2><span class="step-badge">7</span> AI Response</h2>
-                <div id="llmOutput" class="llm-output hidden"></div>
-            </div>
+            <!-- STEP 7: GENERATION -->
+            <section id="step7" class="step-section">
+                <div class="card">
+                    <div class="card-header"><div class="card-title"><div class="step-num">7</div> AI Response</div></div>
+                    <div id="llmOutput" class="ai-response hidden"></div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn" style="background:var(--text-main)" onclick="location.reload()">Reset System</button>
+                    </div>
+                </div>
+            </section>
 
         </div>
     </div>
 
 <script>
-    // --- STATE ---
-    const state = { chunks: [], embeddings: [], results: [] };
-    const get = id => document.getElementById(id);
-    const delay = ms => new Promise(r => setTimeout(r, ms));
+    /* --- ENGINE V5 --- */
+    const state = { chunks: [], embeddings: [], searchResults: [] };
+    const get = (id) => document.getElementById(id);
+    const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
-    function nextStep(current, next) {
-        // Activate Card
-        get(next).classList.add('active');
-        get(next).scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
+    // Navigation
+    function scrollToStep(id) {
         // Update Sidebar
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        get('nav' + next.replace('step', '')).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        get('nav-' + id).classList.add('active');
+        
+        // Update Main View
+        const el = get(id);
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // 1. CHUNK
+    // Analytics
+    function updateAnalytics() {
+        const text = get('sourceText').value || "";
+        const tokens = Math.ceil(text.length / 4); 
+        get('statTokens').innerText = tokens.toLocaleString();
+        get('statCost').innerText = "$" + ((tokens/1000)*0.0005).toFixed(5);
+    }
+    
+    // 1. Chunking
     function runChunking() {
+        const start = Date.now();
         const text = get('sourceText').value.trim();
         const size = parseInt(get('chunkSize').value);
-        const overlap = parseInt(get('chunkOverlap').value);
-
-        if(!text) return alert("Please enter text");
         
         state.chunks = [];
-        let i = 0;
-        while(i < text.length) {
-            state.chunks.push(text.slice(i, i+size));
-            if(i+size >= text.length) break;
-            i += (size - overlap);
-        }
-
+        for(let i=0; i<text.length; i+=size) state.chunks.push(text.slice(i, i+size));
+        
         const out = get('chunksOutput');
         out.innerHTML = '';
-        state.chunks.forEach((c, idx) => {
-            out.innerHTML += `<div class="chunk-box"><strong>#${idx+1}</strong><br>${c}</div>`;
+        state.chunks.forEach((c, i) => {
+            out.innerHTML += `<div class="chunk-card"><strong>Chunk ${i+1}</strong>${c}</div>`;
         });
-
-        nextStep('step1', 'step2');
+        
+        get('statLatency').innerText = (Date.now()-start) + "ms";
+        scrollToStep('step2');
     }
 
-    // 2. EMBED
+    // 2. Embeddings
     async function runEmbeddings(btn) {
-        btn.innerHTML = "Processing...";
-        await delay(500);
-
+        btn.innerHTML = `<div class="loader"></div> Processing`;
+        await delay(600);
+        
         state.embeddings = state.chunks.map((t, i) => ({
-            id: i, text: t, vector: Array.from({length: 4}, () => Math.random().toFixed(3))
+            id: i, text: t, vector: Array.from({length: 4}, () => Math.random().toFixed(4))
         }));
 
         const out = get('vectorsOutput');
         out.innerHTML = '';
         state.embeddings.forEach(item => {
-            out.innerHTML += `
-                <div class="chunk-box">
-                    <strong>#${item.id+1}</strong>
-                    <div class="vector-text">[${item.vector.join(', ')}]</div>
-                </div>`;
+            out.innerHTML += `<div class="chunk-card"><strong>ID: ${item.id}</strong><div style="font-family:monospace; background:#f1f5f9; padding:5px;">[${item.vector.join(', ')}]</div></div>`;
         });
 
         btn.innerHTML = "Done";
-        nextStep('step2', 'step3');
+        scrollToStep('step3');
     }
 
-    // 3. SAVE
-    async function saveToDB(btn) {
-        btn.innerHTML = "Indexing...";
-        await delay(500);
+    // 3. Save
+    async function saveVectors(btn) {
+        btn.innerHTML = `<div class="loader"></div> Indexing`;
+        await delay(400);
+        get('statVectors').innerText = state.embeddings.length;
         btn.innerHTML = "Saved";
-        btn.disabled = true;
-        nextStep('step3', 'step4');
+        scrollToStep('step4'); // JUMPS TO QUERY
     }
 
-    // 4. RETRIEVE
+    // 4. Retrieval (From Query Step)
     async function runRetrieval(btn) {
         const query = get('userQuery').value.toLowerCase();
         if(!query) return alert("Please enter a query");
-        
-        btn.innerHTML = "Searching...";
+
+        btn.innerHTML = `<div class="loader"></div> Searching`;
         await delay(800);
 
-        // Score logic
-        state.results = state.embeddings.map(doc => {
+        state.searchResults = state.embeddings.map(doc => {
             let score = 0.1;
             query.split(' ').forEach(w => {
-                if(w.length > 3 && doc.text.toLowerCase().includes(w)) score += 0.4;
+                if(w.length > 3 && doc.text.toLowerCase().includes(w)) score += 0.3;
             });
-            return { ...doc, score: score + (Math.random()*0.1) };
+            return { ...doc, score: Math.min(score + Math.random()*0.1, 0.99) };
         }).sort((a,b) => b.score - a.score);
 
         const out = get('retrievalOutput');
         out.innerHTML = '';
         const k = parseInt(get('topK').value);
-        
-        state.results.slice(0, k).forEach(item => {
-            const pct = (item.score * 100).toFixed(0);
-            out.innerHTML += `
-                <div class="chunk-box" style="border-color:var(--success)">
-                    <div style="display:flex; justify-content:space-between">
-                        <strong>#${item.id+1}</strong>
-                        <span style="color:var(--success); font-weight:bold">${pct}% Match</span>
-                    </div>
-                    <div style="margin-top:5px">${item.text}</div>
-                </div>`;
+        state.searchResults.slice(0, k).forEach(item => {
+            const pct = (item.score*100).toFixed(0);
+            out.innerHTML += `<div class="chunk-card" style="border-color:var(--success)">
+                <div style="display:flex; justify-content:space-between"><strong>Chunk ${item.id+1}</strong><span style="color:var(--success)">${pct}%</span></div>
+                <div>${item.text}</div>
+            </div>`;
         });
 
-        btn.innerHTML = "Done";
-        nextStep('step4', 'step5');
+        btn.innerHTML = "Search Complete";
+        scrollToStep('step5');
     }
 
-    // 5. PROMPT
+    // 5. Prompt
     function buildPrompt() {
         const k = parseInt(get('topK').value);
-        const context = state.results.slice(0, k).map(c => c.text).join('\n---\n');
-        const query = get('userQuery').value;
-
-        if(!context) return alert("Retrieval failed. No context found.");
-
-        const prompt = `SYSTEM: Answer based on context only.
-
-CONTEXT:
-${context}
-
-QUERY:
-${query}`;
-
-        get('promptOutput').innerText = prompt;
-        nextStep('step5', 'step6');
+        const ctx = state.searchResults.slice(0, k).map(c => c.text).join('\n---\n');
+        get('promptOutput').innerText = `SYSTEM: Answer using context.\n\nCONTEXT:\n${ctx}\n\nUSER:\n${get('userQuery').value}`;
+        scrollToStep('step6');
     }
 
-    // 6. GENERATE (FIXED SPACING BUG)
+    // 6. Generate (Bug Fixed)
     async function runLLM(btn) {
-        btn.innerHTML = "Generating...";
-        await delay(1200);
+        btn.innerHTML = `<div class="loader"></div> Generating`;
+        await delay(1500);
 
         const query = get('userQuery').value.toLowerCase();
-        let ans = "Based on the retrieved context, RAG improves AI models by fetching relevant external data.";
-
-        if(query.includes("who created")) ans = "This tool was created by a developer to fix the bugs you found!";
-        if(query.includes("hallucination")) ans = "RAG reduces hallucinations by grounding the model's answer in specific, retrieved facts rather than training memory.";
-        if(query.includes("chunk")) ans = "Chunking splits text into smaller pieces so the search engine can find precise matches.";
+        let ans = "Based on the provided context, RAG retrieves specific data chunks to answer your query accurately.";
+        
+        if(query.includes("who created")) ans = "This Enterprise RAG System V5 was created by a developer to ensure the User Query step is perfectly visible!";
+        if(query.includes("hallucination")) ans = "RAG reduces hallucinations by grounding the LLM with retrieved facts instead of relying on training memory.";
 
         const out = get('llmOutput');
         out.classList.remove('hidden');
-        out.textContent = ""; // Clear
+        out.innerText = ""; // Use innerText to respect whitespace
         
         let i = 0;
-        
-        // FIXED TYPEWRITER LOOP
         function type() {
             if(i < ans.length) {
-                out.textContent += ans.charAt(i); // Use textContent for safety
+                out.innerText += ans.charAt(i);
                 i++;
                 setTimeout(type, 20);
             }
@@ -403,8 +505,26 @@ ${query}`;
         type();
 
         btn.innerHTML = "Regenerate";
-        nextStep('step6', 'step7');
+        scrollToStep('step7');
     }
+    
+    // Init
+    updateAnalytics();
+    
+    // Tabs logic
+    function switchTab(mode) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        if(mode === 'text') { get('mode-text').classList.remove('hidden'); get('mode-file').classList.add('hidden'); }
+        else { get('mode-text').classList.add('hidden'); get('mode-file').classList.remove('hidden'); }
+    }
+    
+    // File Input
+    get('fileInput').addEventListener('change', function() {
+        const reader = new FileReader();
+        reader.onload = function(){ get('sourceText').value = reader.result; switchTab('text'); updateAnalytics(); };
+        reader.readAsText(this.files[0]);
+    });
 
 </script>
 </body>

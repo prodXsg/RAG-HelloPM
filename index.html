@@ -181,7 +181,6 @@
         .btn:hover { background-color: #1d4ed8; }
         .btn:disabled { background-color: var(--text-muted); cursor: not-allowed; }
 
-        /* FIX: Added white-space pre-wrap to preserve spaces */
         .ai-response { 
             background: #f0fdf4; 
             border: 1px solid #bbf7d0; 
@@ -191,7 +190,6 @@
             color: #064e3b; 
             margin-top: 10px; 
             line-height: 1.6;
-            white-space: pre-wrap; 
         }
 
         .terminal { background: #f8fafc; border: 1px solid var(--border); padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
@@ -419,7 +417,6 @@
     // --- NAV ---
     function scrollToStep(id) {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        // Find closest matching nav item based on onclick attribute
         const navItem = document.querySelector(`.nav-item[onclick="scrollToStep('${id}')"]`);
         if(navItem) navItem.classList.add('active');
         
@@ -502,4 +499,51 @@
 
     function buildPrompt() {
         const k = parseInt(get('topK').value);
-        const context = state
+        const context = state.searchResults.slice(0, k).map(c => c.text).join('\n');
+        get('promptOutput').innerHTML = `<span style="color:#64748b">SYSTEM: Answer based on context.</span><br><br><span style="color:#2563eb">CONTEXT:</span><br>${context}<br><br><span style="color:#10b981">QUERY:</span><br>${get('userQuery').value}`;
+        scrollToStep('step6');
+    }
+
+    // --- GENERATION (FIXED WHITESPACE ISSUE) ---
+    async function runLLM(btn) {
+        btn.disabled = true; btn.innerHTML = `<div class="loader"></div> Generating`;
+        await sleep(1500);
+        
+        const q = get('userQuery').value.toLowerCase();
+        
+        // Define answer text (ensure spaces are clear)
+        let ans = "Based on the retrieved context, RAG (Retrieval-Augmented Generation) uses external data to ground the LLM's response.";
+        
+        if(q.includes("who created")) ans = "This tool was built by an expert developer.";
+        if(q.includes("weather")) ans = "I cannot provide weather updates from the provided text context.";
+        if(q.includes("hallucination")) ans = "RAG reduces hallucinations by grounding answers in retrieved data rather than training memory.";
+        
+        const out = get('llmOutput'); 
+        out.classList.remove('hidden'); 
+        out.innerHTML = ""; // Using innerHTML to allow entities
+        
+        let i=0; 
+        const type = () => { 
+            if(i < ans.length){ 
+                let char = ans.charAt(i);
+                
+                // FORCE SPACE TO BE A NON-BREAKING SPACE
+                // This prevents the browser from collapsing the trailing space during animation
+                if (char === ' ') char = '&nbsp;';
+                
+                out.innerHTML += char; 
+                i++; 
+                setTimeout(type, 20); 
+            }
+        }; 
+        type();
+        
+        btn.innerHTML = "Regenerate"; 
+        btn.disabled = false; 
+        scrollToStep('step7');
+    }
+
+    updateAnalytics();
+</script>
+</body>
+</html>

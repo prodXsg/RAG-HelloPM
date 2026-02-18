@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG OS V6 | Interactive</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>RAG OS V6 | Manual Input Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
         :root {
+            /* V6 DESIGN SYSTEM */
             --bg-body: #f1f5f9;       
             --bg-sidebar: #ffffff;    
             --bg-card: #ffffff;       
@@ -19,7 +20,7 @@
             --border: #e2e8f0;        
             --success: #10b981;  
             --radius: 12px;
-            --highlight: #fef08a; /* Yellow for attention */
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08);
         }
 
         * { box-sizing: border-box; outline: none; margin: 0; padding: 0; }
@@ -45,18 +46,38 @@
         }
 
         .brand {
-            font-size: 1.2rem; font-weight: 800; color: var(--text-main);
-            margin-bottom: 30px; display: flex; align-items: center; gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .brand span { color: var(--primary); }
+        .brand-icon {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
 
+        .nav-steps { list-style: none; display: flex; flex-direction: column; gap: 4px; }
         .nav-item {
-            padding: 12px 14px; border-radius: 8px; font-size: 0.85rem;
-            color: var(--text-muted); cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; gap: 12px; font-weight: 500;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px;
         }
         .nav-item:hover { background-color: var(--bg-body); color: var(--text-main); }
-        .nav-item.active { background-color: var(--primary-light); color: var(--primary); font-weight: 700; }
+        .nav-item.active { background-color: var(--primary-light); color: var(--primary); font-weight: 600; }
+        .nav-icon { font-size: 1.2rem; color: #94a3b8; }
+        .nav-item.active .nav-icon { color: var(--primary); }
 
         /* --- MAIN LAYOUT --- */
         .main-content {
@@ -66,6 +87,22 @@
             overflow: hidden;
         }
 
+        /* ANALYTICS BAR */
+        .analytics-bar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 15px 40px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            z-index: 10;
+        }
+        .stat-item { border-right: 1px solid var(--border); padding-right: 20px; }
+        .stat-item:last-child { border: none; }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text-main); font-family: 'JetBrains Mono', monospace; }
+
+        /* SCROLL AREA */
         .workspace {
             flex: 1;
             overflow-y: auto;
@@ -81,9 +118,9 @@
         .step-section {
             max-width: 900px;
             margin: 0 auto 50px auto;
-            opacity: 0.3;
+            opacity: 0.4;
             filter: grayscale(1);
-            pointer-events: none; /* Disabled by default */
+            pointer-events: none;
             transition: all 0.4s ease;
         }
         .step-section.active { opacity: 1; filter: grayscale(0); pointer-events: all; }
@@ -93,48 +130,48 @@
             border-radius: var(--radius);
             padding: 32px;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            box-shadow: var(--shadow-sm);
         }
 
         .card-header { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
         .card-title { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
         .step-num { 
-            background: var(--primary); color: white; width: 28px; height: 28px; 
+            background: var(--primary); color: white; width: 24px; height: 24px; 
             border-radius: 6px; display: flex; align-items: center; justify-content: center; 
-            font-size: 0.9rem; font-weight: bold;
+            font-size: 0.8rem; 
         }
 
-        /* --- INPUTS --- */
+        /* --- UI ELEMENTS --- */
+        /* Tabs */
+        .tab-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn {
+            padding: 8px 16px; background: none; border: none; border-bottom: 2px solid transparent;
+            font-weight: 600; color: var(--text-muted); cursor: pointer;
+        }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* Inputs */
         textarea, input {
             width: 100%; padding: 12px; border: 1px solid var(--border);
             border-radius: 8px; font-family: inherit; font-size: 0.95rem; transition: 0.2s;
         }
         textarea:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         
-        /* THE IMPORTANT QUERY INPUT */
-        .query-box-wrapper {
-            background: #fffbeb; /* Light yellow background */
-            padding: 20px;
-            border-radius: 12px;
-            border: 2px solid #fcd34d;
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
-        }
-
         .big-query-input {
-            padding: 15px; font-size: 1.2rem; border: 1px solid #d1d5db; width: 100%; border-radius: 8px;
+            padding: 20px; 
+            font-size: 1.1rem; 
+            border: 2px solid var(--border);
+            background-color: #f8fafc;
+        }
+        .big-query-input:focus { 
+            border-color: var(--primary); 
+            background-color: #fff;
         }
 
         /* Buttons */
         .btn {
             background-color: var(--primary); color: white; border: none;
-            padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
             display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
         }
         .btn:hover { background-color: #1d4ed8; transform: translateY(-1px); }
@@ -146,6 +183,7 @@
             background: white; border: 1px solid var(--border); padding: 16px; 
             border-radius: 8px; font-size: 0.85rem; color: var(--text-muted);
         }
+        .chunk-card strong { color: var(--primary); display: block; margin-bottom: 5px; }
 
         /* Output Areas */
         .terminal {
@@ -157,7 +195,7 @@
             background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981;
             padding: 24px; border-radius: 8px; color: #14532d; font-size: 1rem; line-height: 1.6;
             margin-top: 20px; 
-            white-space: pre-wrap;
+            white-space: pre-wrap; 
         }
 
         .hidden { display: none; }
@@ -169,30 +207,86 @@
 
     <!-- SIDEBAR -->
     <nav class="sidebar">
-        <div class="brand"><span>⚡</span> RAG OS V6</div>
-        <div class="nav-item active" id="nav-step1">1. Ingestion</div>
-        <div class="nav-item" id="nav-step2">2. Chunking</div>
-        <div class="nav-item" id="nav-step3">3. Embeddings</div>
-        <div class="nav-item" id="nav-step4" style="color:var(--primary); font-weight:bold;">4. USER QUERY</div>
-        <div class="nav-item" id="nav-step5">5. Retrieval</div>
-        <div class="nav-item" id="nav-step6">6. Prompting</div>
-        <div class="nav-item" id="nav-step7">7. Generation</div>
+        <div class="brand">
+            <div class="brand-icon"><span class="material-icons-round">hub</span></div>
+            <div>RAG OS <br><span style="font-size:0.7rem; font-weight:500; color:#94a3b8;">Enterprise V6.0</span></div>
+        </div>
+        <ul class="nav-steps">
+            <li class="nav-item active" id="nav-step1" onclick="scrollToStep('step1')">
+                <span class="material-icons-round nav-icon">upload_file</span> Ingestion
+            </li>
+            <li class="nav-item" id="nav-step2" onclick="scrollToStep('step2')">
+                <span class="material-icons-round nav-icon">content_cut</span> Chunking
+            </li>
+            <li class="nav-item" id="nav-step3" onclick="scrollToStep('step3')">
+                <span class="material-icons-round nav-icon">polyline</span> Embeddings
+            </li>
+            <!-- DEDICATED MANUAL QUERY STEP -->
+            <li class="nav-item" id="nav-step4" onclick="scrollToStep('step4')">
+                <span class="material-icons-round nav-icon">keyboard</span> Manual Query
+            </li>
+            <li class="nav-item" id="nav-step5" onclick="scrollToStep('step5')">
+                <span class="material-icons-round nav-icon">search</span> Retrieval
+            </li>
+            <li class="nav-item" id="nav-step6" onclick="scrollToStep('step6')">
+                <span class="material-icons-round nav-icon">code</span> Prompting
+            </li>
+            <li class="nav-item" id="nav-step7" onclick="scrollToStep('step7')">
+                <span class="material-icons-round nav-icon">auto_awesome</span> Generation
+            </li>
+        </ul>
     </nav>
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
+        
+        <!-- ANALYTICS DASHBOARD -->
+        <div class="analytics-bar">
+            <div class="stat-item">
+                <div class="stat-label">Total Tokens</div>
+                <div class="stat-value" id="statTokens">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Est. Cost</div>
+                <div class="stat-value" id="statCost">$0.0000</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Latency</div>
+                <div class="stat-value" id="statLatency">0ms</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Vector Count</div>
+                <div class="stat-value" id="statVectors">0</div>
+            </div>
+        </div>
+
+        <!-- WORKSPACE -->
         <div class="workspace">
             <div class="header-area">
-                <h1>Visual RAG Engine</h1>
-                <p class="subtitle">Follow the steps to build your AI response.</p>
+                <h1>RAG Configuration</h1>
+                <p class="subtitle">End-to-end visualization of the Retrieval-Augmented Generation pipeline.</p>
             </div>
 
             <!-- STEP 1: INGESTION -->
             <section id="step1" class="step-section active">
                 <div class="card">
                     <div class="card-header"><div class="card-title"><div class="step-num">1</div> Data Ingestion</div></div>
-                    <label>Source Text</label>
-                    <textarea id="sourceText" rows="4">RAG (Retrieval-Augmented Generation) is a technique that enhances Large Language Models by fetching relevant data from external sources before generating an answer. Instead of relying solely on training data, RAG splits documents into chunks, turns them into vectors, and retrieves the most similar chunks to the user's query. This process reduces hallucinations and ensures the model has up-to-date information.</textarea>
+                    
+                    <div class="tab-group">
+                        <button class="tab-btn active" onclick="switchTab('text')">Paste Text</button>
+                        <button class="tab-btn" onclick="switchTab('file')">Upload File</button>
+                    </div>
+
+                    <div id="mode-text">
+                        <textarea id="sourceText" rows="6" oninput="updateAnalytics()">RAG (Retrieval-Augmented Generation) is a technique that enhances Large Language Models by fetching relevant data from external sources before generating an answer. Instead of relying solely on training data, RAG splits documents into chunks, turns them into vectors, and retrieves the most similar chunks to the user's query. This process reduces hallucinations and ensures the model has up-to-date information.</textarea>
+                    </div>
+
+                    <div id="mode-file" class="hidden" style="padding:20px; border:2px dashed var(--border); text-align:center; border-radius:8px;">
+                        <span class="material-icons-round" style="font-size:32px; color:var(--text-muted);">cloud_upload</span>
+                        <p>Drag and drop or <button class="btn" style="padding:4px 8px; font-size:0.8rem;" onclick="document.getElementById('fileInput').click()">Browse</button></p>
+                        <input type="file" id="fileInput" class="hidden">
+                    </div>
+
                     <div style="margin-top:20px; text-align:right;">
                         <button class="btn" onclick="runChunking()">Next: Chunk Data &rarr;</button>
                     </div>
@@ -203,9 +297,13 @@
             <section id="step2" class="step-section">
                 <div class="card">
                     <div class="card-header"><div class="card-title"><div class="step-num">2</div> Chunk Inspection</div></div>
+                    <div style="display:flex; gap:20px; margin-bottom:20px;">
+                        <div style="flex:1"><label>Chunk Size</label><input type="number" id="chunkSize" value="100"></div>
+                        <div style="flex:1"><label>Overlap</label><input type="number" id="chunkOverlap" value="20"></div>
+                    </div>
                     <div id="chunksOutput" class="grid-chunks"></div>
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="runEmbeddings(this)">Next: Create Vectors &rarr;</button>
+                        <button class="btn" onclick="runEmbeddings(this)">Next: Vectorize &rarr;</button>
                     </div>
                 </div>
             </section>
@@ -216,24 +314,26 @@
                     <div class="card-header"><div class="card-title"><div class="step-num">3</div> Vector Store</div></div>
                     <div id="vectorsOutput" class="grid-chunks"></div>
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="saveVectors(this)">Next: Save & Go to Query &rarr;</button>
+                        <button class="btn" onclick="saveVectors(this)">Next: Save Index &rarr;</button>
                     </div>
                 </div>
             </section>
 
-            <!-- STEP 4: USER QUERY (FOCUSED STEP) -->
+            <!-- STEP 4: USER QUERY (MANUAL INPUT) -->
             <section id="step4" class="step-section">
-                <div class="card">
-                    <div class="card-header"><div class="card-title"><div class="step-num">4</div> User Query</div></div>
-                    <p style="margin-bottom:15px; font-weight:500;">The system is ready. Please type your question below:</p>
+                <div class="card" style="border-color: var(--primary);">
+                    <div class="card-header"><div class="card-title"><div class="step-num">4</div> Manual Query</div></div>
+                    <p style="color:var(--text-muted); margin-bottom:15px;">The Knowledge Base is indexed. Please type your question manually below.</p>
                     
-                    <!-- HIGH VISIBILITY INPUT WRAPPER -->
-                    <div class="query-box-wrapper">
-                        <input type="text" id="userQuery" class="big-query-input" placeholder="Type your question here (e.g., 'What is RAG?')">
+                    <!-- EMPTY INPUT FOR MANUAL TYPING -->
+                    <input type="text" id="userQuery" class="big-query-input" placeholder="Type your question here (e.g., What is RAG?)..." autocomplete="off">
+                    
+                    <div style="margin-top:10px; display:flex; gap:10px;">
+                        <button class="btn" style="background:#e2e8f0; color:#475569; font-size:0.8rem;" onclick="document.getElementById('userQuery').value='How does RAG reduce hallucinations?'">Use Example</button>
                     </div>
-                    
+
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="runRetrieval(this)">Search Knowledge Base &rarr;</button>
+                        <button class="btn" onclick="runRetrieval(this)">Next: Run Search &rarr;</button>
                     </div>
                 </div>
             </section>
@@ -242,13 +342,13 @@
             <section id="step5" class="step-section">
                 <div class="card">
                     <div class="card-header"><div class="card-title"><div class="step-num">5</div> Retrieval Results</div></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <label>Top Matches</label>
-                        <input type="range" id="topK" min="1" max="5" value="2">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <label>Top Matches (K): <span id="topKVal" style="color:var(--primary)">2</span></label>
+                        <input type="range" id="topK" min="1" max="5" value="2" oninput="document.getElementById('topKVal').innerText=this.value">
                     </div>
                     <div id="retrievalOutput" class="grid-chunks"></div>
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" onclick="buildPrompt()">Next: Construct Prompt &rarr;</button>
+                        <button class="btn" onclick="buildPrompt()">Next: Build Prompt &rarr;</button>
                     </div>
                 </div>
             </section>
@@ -270,7 +370,7 @@
                     <div class="card-header"><div class="card-title"><div class="step-num">7</div> AI Response</div></div>
                     <div id="llmOutput" class="ai-response hidden"></div>
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn" style="background:#475569" onclick="location.reload()">Reset</button>
+                        <button class="btn" style="background:var(--text-main)" onclick="location.reload()">Reset System</button>
                     </div>
                 </div>
             </section>
@@ -279,29 +379,43 @@
     </div>
 
 <script>
-    /* --- LOGIC ENGINE V6 --- */
+    /* --- ENGINE V6 (Manual Input Focus) --- */
     const state = { chunks: [], embeddings: [], searchResults: [] };
     const get = (id) => document.getElementById(id);
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
-    // Navigation Helper
+    // Navigation
     function scrollToStep(id) {
-        // Update Sidebar
+        // Sidebar update
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        const nav = get('nav-' + id);
-        if(nav) nav.classList.add('active');
+        get('nav-' + id).classList.add('active');
         
-        // Update Main View
+        // Main view update
         const el = get(id);
         el.classList.add('active');
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Auto-focus Input if Step 4
+        if(id === 'step4') {
+            setTimeout(() => get('userQuery').focus(), 500);
+        }
     }
 
+    // Analytics
+    function updateAnalytics() {
+        const text = get('sourceText').value || "";
+        const tokens = Math.ceil(text.length / 4); 
+        get('statTokens').innerText = tokens.toLocaleString();
+        get('statCost').innerText = "$" + ((tokens/1000)*0.0005).toFixed(5);
+    }
+    
     // 1. Chunking
     function runChunking() {
+        const start = Date.now();
         const text = get('sourceText').value.trim();
+        const size = parseInt(get('chunkSize').value);
+        
         state.chunks = [];
-        const size = 100;
         for(let i=0; i<text.length; i+=size) state.chunks.push(text.slice(i, i+size));
         
         const out = get('chunksOutput');
@@ -309,6 +423,8 @@
         state.chunks.forEach((c, i) => {
             out.innerHTML += `<div class="chunk-card"><strong>Chunk ${i+1}</strong>${c}</div>`;
         });
+        
+        get('statLatency').innerText = (Date.now()-start) + "ms";
         scrollToStep('step2');
     }
 
@@ -316,6 +432,7 @@
     async function runEmbeddings(btn) {
         btn.innerHTML = `<div class="loader"></div> Processing`;
         await delay(600);
+        
         state.embeddings = state.chunks.map((t, i) => ({
             id: i, text: t, vector: Array.from({length: 4}, () => Math.random().toFixed(4))
         }));
@@ -323,37 +440,29 @@
         const out = get('vectorsOutput');
         out.innerHTML = '';
         state.embeddings.forEach(item => {
-            out.innerHTML += `<div class="chunk-card"><strong>ID: ${item.id}</strong><div style="font-family:monospace; background:#f1f5f9;">[${item.vector.join(', ')}]</div></div>`;
+            out.innerHTML += `<div class="chunk-card"><strong>ID: ${item.id}</strong><div style="font-family:monospace; background:#f1f5f9; padding:5px;">[${item.vector.join(', ')}]</div></div>`;
         });
 
         btn.innerHTML = "Done";
         scrollToStep('step3');
     }
 
-    // 3. Save -> JUMP TO INPUT
+    // 3. Save
     async function saveVectors(btn) {
         btn.innerHTML = `<div class="loader"></div> Indexing`;
         await delay(400);
+        get('statVectors').innerText = state.embeddings.length;
         btn.innerHTML = "Saved";
-        btn.disabled = true;
-        
-        // ACTIVATE STEP 4
-        scrollToStep('step4');
-        
-        // AUTO FOCUS THE INPUT (The Fix!)
-        setTimeout(() => {
-            const input = get('userQuery');
-            input.focus();
-            input.select();
-        }, 500);
+        scrollToStep('step4'); // Jumps to MANUAL QUERY
     }
 
-    // 4. Retrieval (Triggered by Search Button)
+    // 4. Retrieval (Manual Input Check)
     async function runRetrieval(btn) {
-        const query = get('userQuery').value; // Removed .toLowerCase() here to keep original text for display
+        const query = get('userQuery').value.trim();
         
+        // VALIDATION: Ensure user typed something
         if(!query) {
-            alert("Please type a question!");
+            alert("Please type a query in the input box!");
             get('userQuery').focus();
             return;
         }
@@ -361,10 +470,9 @@
         btn.innerHTML = `<div class="loader"></div> Searching`;
         await delay(800);
 
-        // Scoring Logic
-        const qLower = query.toLowerCase();
         state.searchResults = state.embeddings.map(doc => {
             let score = 0.1;
+            const qLower = query.toLowerCase();
             qLower.split(' ').forEach(w => {
                 if(w.length > 3 && doc.text.toLowerCase().includes(w)) score += 0.3;
             });
@@ -390,21 +498,29 @@
     function buildPrompt() {
         const k = parseInt(get('topK').value);
         const ctx = state.searchResults.slice(0, k).map(c => c.text).join('\n---\n');
-        get('promptOutput').innerText = `SYSTEM: Answer using context.\n\nCONTEXT:\n${ctx}\n\nUSER QUERY:\n${get('userQuery').value}`;
+        get('promptOutput').innerText = `SYSTEM: Answer using context.\n\nCONTEXT:\n${ctx}\n\nUSER:\n${get('userQuery').value}`;
         scrollToStep('step6');
     }
 
-    // 6. Generate
+    // 6. Generate (Smart Fallback)
     async function runLLM(btn) {
         btn.innerHTML = `<div class="loader"></div> Generating`;
         await delay(1500);
 
         const query = get('userQuery').value.toLowerCase();
-        let ans = "Based on the provided context, RAG retrieves specific data chunks to answer your query accurately.";
+        let ans = "";
         
-        // Logic for custom answers
-        if(query.includes("who created")) ans = "This tool was created by a developer to demonstrate RAG.";
-        if(query.includes("hallucination")) ans = "RAG reduces hallucinations by grounding the LLM with retrieved facts.";
+        // Dynamic Response Logic
+        if(query.includes("who created")) {
+            ans = "This Enterprise RAG System V6 was created by an expert developer to demonstrate the power of Semantic Search.";
+        } else if(query.includes("hallucination")) {
+            ans = "Based on the context, RAG reduces hallucinations by fetching relevant data from external sources, ensuring the model relies on up-to-date information.";
+        } else if(query.includes("chunk")) {
+            ans = "Chunking involves splitting documents into smaller segments to be turned into vectors, allowing for precise information retrieval.";
+        } else {
+            // Generic fallback that sounds smart
+            ans = `Based on the provided context, I have analyzed your query about "${query}". The retrieved documents suggest that RAG systems rely on splitting data into chunks and using vector similarity to find the best match.`;
+        }
 
         const out = get('llmOutput');
         out.classList.remove('hidden');
@@ -423,6 +539,24 @@
         btn.innerHTML = "Regenerate";
         scrollToStep('step7');
     }
+    
+    // Init
+    updateAnalytics();
+    
+    // Tabs logic
+    function switchTab(mode) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        if(mode === 'text') { get('mode-text').classList.remove('hidden'); get('mode-file').classList.add('hidden'); }
+        else { get('mode-text').classList.add('hidden'); get('mode-file').classList.remove('hidden'); }
+    }
+    
+    // File Input
+    get('fileInput').addEventListener('change', function() {
+        const reader = new FileReader();
+        reader.onload = function(){ get('sourceText').value = reader.result; switchTab('text'); updateAnalytics(); };
+        reader.readAsText(this.files[0]);
+    });
 
 </script>
 </body>

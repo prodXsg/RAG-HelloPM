@@ -760,7 +760,7 @@ The retrieved chunks are injected into the prompt as context, enabling the LLM t
         <section id="step4" class="step-section">
             <div class="card">
                 <h2 style="font-size:1.5rem; font-weight:700; color:var(--text-primary); margin-bottom:16px; display:flex; align-items:center; gap:8px;"><span style="display:inline-flex; width:32px; height:32px; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--primary), var(--secondary)); border-radius:6px; font-size:0.9rem;">4</span> User Query</h2>
-                <input type="text" id="userQuery" value="How does RAG reduce hallucinations?" style="margin-bottom:16px;">
+                <input type="text" id="userQuery" placeholder="Enter your question..." style="margin-bottom:16px;">
                 <div style="text-align:right;">
                     <button class="btn" onclick="proceedToRetrieval()">Proceed to Retrieval</button>
                 </div>
@@ -1184,18 +1184,40 @@ async function callAnthropicAPI(prompt, apiKey) {
 }
 
 function mockResponse() {
-    const k   = parseInt(get('topK').value);
-    const top = state.searchResults.slice(0, k);
-    const ctx = top.map(c => c.text).join(' ').toLowerCase();
+    const k     = parseInt(get('topK').value);
+    const top   = state.searchResults.slice(0, k);
+    const query = get('userQuery').value.toLowerCase();
 
-    if (ctx.includes('hallucin') || get('userQuery').value.toLowerCase().includes('hallucin')) {
-        return 'Based on the retrieved context: RAG reduces hallucinations by grounding the model\'s response in retrieved source material. Rather than relying solely on its training parameters, the model synthesises answers from the actual documents, which constrains outputs to factual information present in the knowledge base.';
-    }
     if (!top.length || top[0].score <= 0) {
         return 'The retrieved context does not contain information relevant to this query.';
     }
-    const keyTerms = top[0].topTerms.slice(0, 3).map(t => t.term).join(', ');
-    return `Based on the retrieved context (key terms: ${keyTerms}): the documents provide relevant information about "${get('userQuery').value}". The top-ranked chunk covers this topic with a cosine similarity score of ${(top[0].score * 100).toFixed(1)}%, indicating strong semantic relevance to your query.`;
+
+    // Extract sentences from top retrieved chunks that might answer the query
+    const contextText = top.map(c => c.text).join(' ');
+    const sentences = contextText.match(/[^.!?]+[.!?]+/g) || [];
+
+    // Score sentences by relevance to query keywords
+    const queryTerms = query.split(/\s+/).filter(w => w.length > 2);
+    const scoredSentences = sentences.map(sent => {
+        const sentLower = sent.toLowerCase();
+        const matchCount = queryTerms.reduce((count, term) =>
+            count + (sentLower.includes(term) ? 1 : 0), 0);
+        return { sentence: sent.trim(), score: matchCount };
+    }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+    if (scoredSentences.length > 0) {
+        // Return top 2-3 most relevant sentences from the context
+        const answer = scoredSentences.slice(0, 2).map(s => s.sentence).join(' ');
+        return answer.replace(/\s+/g, ' ').trim();
+    }
+
+    // Fallback: return first sentence with highest relevance score
+    if (top[0].text.length > 0) {
+        const firstSentence = top[0].text.split(/[.!?]/)[0].trim();
+        return firstSentence + '. This information comes from the retrieved context that matched your query.';
+    }
+
+    return 'Unable to generate a response based on the retrieved context.';
 }
 
 async function runLLM(btn) {
